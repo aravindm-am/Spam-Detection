@@ -15,6 +15,7 @@ DATABRICKS_TOKEN = st.secrets["databricks_token"]
 st.set_page_config(page_title="Telecom Fraud Detection", layout="wide")
 st.title("📞 Telecom Fraud Detection")
 
+# Connect to Databricks
 @st.cache_resource
 def get_connection():
     try:
@@ -25,8 +26,15 @@ def get_connection():
         )
         return conn
     except Exception as e:
-        st.error(f"Connection failed: {e}")
+        st.error(f"❌ Databricks connection failed: {e}")
         return None
 
-# Input from user
-phone_input = st.text_input("Enter phone number to check:")
+# Check connection
+conn = get_connection()
+if conn:
+    st.success("✅ Successfully connected to Databricks.")
+else:
+    st.stop()  # Do not continue if connection fails
+
+# Show input after successful connection
+phone_input = st.text_input("📱 Enter phone number to check:")
