@@ -1,0 +1,7 @@
+streamlit
+openai
+shap
+matplotlib
+pandas
+joblib
+databricks-sql-connector
