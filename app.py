@@ -7,9 +7,9 @@ import os
 from databricks import sql
 
 # Load Databricks secrets
-DATABRICKS_HOST = st.secrets["DATABRICKS_HOST"]
-DATABRICKS_PATH = st.secrets["DATABRICKS_PATH"]
-DATABRICKS_TOKEN = st.secrets["DATABRICKS_TOKEN"]
+DATABRICKS_HOST = st.secrets["databricks_host"]
+DATABRICKS_PATH = st.secrets["databricks_http_path"]
+DATABRICKS_TOKEN = st.secrets["databricks_token"]
 
 # Configure page
 st.set_page_config(page_title="Telecom Fraud Detection", layout="wide")
