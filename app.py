@@ -28,21 +28,5 @@ def get_connection():
         st.error(f"Connection failed: {e}")
         return None
 
-
-st.header("🔌 Databricks Connection Test")
-
-conn = get_databricks_connection()
-if conn:
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SHOW DATABASES")
-        databases = cursor.fetchall()
-        st.success("✅ Connected successfully!")
-        st.write("Available Databases:", databases)
-    except Exception as e:
-        st.error(f"Query failed: {e}")
-else:
-    st.stop()
-
 # Input from user
 phone_input = st.text_input("Enter phone number to check:")
