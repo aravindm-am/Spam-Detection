@@ -7,3 +7,4 @@ joblib
 databricks-sql-connector
 databricks
 scikit-learn==1.4.2
+seaborn
