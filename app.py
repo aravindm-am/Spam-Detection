@@ -91,14 +91,14 @@ st.title("📞 Telecom Fraud Detection")
 
 phone_number = st.text_input("Enter Phone Number to Check")
 
-if st.button("Run Fraud Check"):
-    if phone_number.strip():
-        with st.spinner("Running analysis on Databricks..."):
-            output = run_notebook(phone_number.strip())
-            st.success("🎉 Job finished!")
-            st.code(output)
-    else:
-        st.warning("Please enter a phone number.")
+# if st.button("Run Fraud Check"):
+#     if phone_number.strip():
+#         with st.spinner("Running analysis on Databricks..."):
+#             output = run_notebook(phone_number.strip())
+#             st.success("🎉 Job finished!")
+#             st.code(output)
+#     else:
+#         st.warning("Please enter a phone number.")
 
 if st.button("Run Fraud Check", key="run_check_button"):
     if phone_number.strip():
