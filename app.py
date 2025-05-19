@@ -14,10 +14,6 @@ DATABRICKS_PATH = st.secrets["databricks_http_path"]
 DATABRICKS_TOKEN = st.secrets["databricks_token"]
 DATABRICKS_NOTEBOOK_PATH = st.secrets["databricks_notebook_path"]
 
-# Configure page
-st.set_page_config(page_title="Telecom Fraud Detection", layout="wide")
-st.title("📞 Telecom Fraud Detection")
-
 # Connect to Databricks
 @st.cache_resource
 def get_connection():
@@ -62,7 +58,7 @@ def run_notebook(phone_number):
     }
 
     response = requests.post(
-        f"{DATABRICKS_INSTANCE}/api/2.1/jobs/runs/submit",
+        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/submit",
         headers=headers,
         json=submit_payload
     )
