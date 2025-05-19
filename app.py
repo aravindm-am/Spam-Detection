@@ -99,3 +99,41 @@ if st.button("Run Fraud Check"):
             st.code(output)
     else:
         st.warning("Please enter a phone number.")
+
+if st.button("Run Fraud Check"):
+    if phone_number.strip():
+        with st.spinner("Running analysis on Databricks..."):
+            result = run_notebook(phone_number.strip())
+            if result == "SUCCESS":
+                st.success("🎉 Analysis complete!")
+
+                # Load prediction result
+                try:
+                    result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
+                    row = result_df.iloc[0]
+                    st.subheader("📞 Prediction Summary")
+                    st.markdown(f"**Phone Number**: `{row['caller']}`")
+                    st.markdown(f"**Prediction**: `{row['prediction']}`")
+                    st.markdown(f"**Anomaly Score**: `{row['anomaly_score']:.4f}`")
+                    st.markdown(f"**Explanation**: {row['explanation']}")
+                except Exception as e:
+                    st.error(f"❌ Failed to read prediction: {e}")
+
+                # Load SHAP plots
+                st.subheader("📊 SHAP Feature Importance")
+                try:
+                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
+                except Exception as e:
+                    st.warning(f"⚠ Could not load feature importance plot: {e}")
+
+                st.subheader("🔍 SHAP Waterfall Plot")
+                try:
+                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")
+                except Exception as e:
+                    st.warning(f"⚠ Could not load waterfall plot: {e}")
+            else:
+                st.error(f"❌ Job failed: {result}")
+    else:
+        st.warning("📱 Please enter a valid phone number.")
+
+
