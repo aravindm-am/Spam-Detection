@@ -74,7 +74,7 @@ def run_notebook(phone_number):
     # Poll for status
     while True:
         status_response = requests.get(
-            f"{DATABRICKS_INSTANCE}/api/2.1/jobs/runs/get?run_id={run_id}",
+            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
             headers=headers
         )
         run_state = status_response.json()["state"]["life_cycle_state"]
