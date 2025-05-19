@@ -100,7 +100,7 @@ if st.button("Run Fraud Check"):
     else:
         st.warning("Please enter a phone number.")
 
-if st.button("Run Fraud Check"):
+if st.button("Run Fraud Check", key="run_check_button"):
     if phone_number.strip():
         with st.spinner("Running analysis on Databricks..."):
             result = run_notebook(phone_number.strip())
