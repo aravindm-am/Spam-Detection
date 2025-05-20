@@ -82,7 +82,8 @@ def run_notebook(phone_number):
         st.info(f"run_state={run_state}")    
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
-        time.sleep(5)    result = status_response.json()
+        time.sleep(5)    
+    result = status_response.json()
     st.info(f"result={result}")
     notebook_output = result.get("notebook_output", {})
     st.info(f"notebook_output={notebook_output}")
