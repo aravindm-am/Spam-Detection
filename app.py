@@ -7,7 +7,7 @@ import os
 from databricks import sql
 import requests
 import time 
-from minio import Minio
+import Minio
 import tempfile
 
  
