@@ -86,9 +86,11 @@ def run_notebook(phone_number):
 
     result = status_response.json()
     st.info(f"result={result}")
-    notebook_output = result.get("notebook_output", {})
+    #notebook_output = result.get("notebook_output", {})
+    notebook_output_state = result.get("state", {})
+    #notebook_output=notebook_output.get("result_state")
     st.info(f"notebook_output={notebook_output}")    
-    return notebook_output.get("result", "✅ Job completed, but no output was returned.")
+    return notebook_output.get("result_state", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
@@ -132,7 +134,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
 
                 st.subheader("🔍 SHAP Waterfall Plot")
                 try:
-                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")
+                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")                    
                 except Exception as e:
                     st.warning(f"⚠ Could not load waterfall plot: {e}")
             else:
