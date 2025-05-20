@@ -7,7 +7,16 @@ import os
 from databricks import sql
 import requests
 import time
+from minio import Minio
 
+# Initialize client
+minio_client = Minio(
+    "10.113.52.113:32215",
+    access_key="minio",
+    secret_key="minio123",
+    secure=False  # Set to True if using HTTPS
+)
+ 
 # Load Databricks secrets
 DATABRICKS_HOST = st.secrets["databricks_host"]
 DATABRICKS_PATH = st.secrets["databricks_http_path"]
