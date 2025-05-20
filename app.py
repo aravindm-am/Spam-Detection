@@ -79,10 +79,11 @@ def run_notebook(phone_number):
         )
         st.info(f"status_response={status_response}")
         run_state = status_response.json()["state"]["life_cycle_state"]
-        st.info(f"run_state={run_state}")    
+        st.info(f"run_state={run_state}")
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
-        time.sleep(5)    
+        time.sleep(5)
+        
     result = status_response.json()
     st.info(f"result={result}")
     notebook_output = result.get("notebook_output", {})
@@ -126,15 +127,6 @@ st.title("📞 Telecom Fraud Detection")
 
 phone_number = st.text_input("Enter Phone Number to Check")
 
-# if st.button("Run Fraud Check"):
-#     if phone_number.strip():
-#         with st.spinner("Running analysis on Databricks..."):
-#             output = run_notebook(phone_number.strip())
-#             st.success("🎉 Job finished!")
-#             st.code(output)
-#     else:
-#         st.warning("Please enter a phone number.")
-
 if st.button("Run Fraud Check", key="run_check_button"):
     if phone_number.strip():        
         with st.spinner("Running analysis on Databricks..."):
@@ -148,6 +140,12 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 
                 # Try to parse as JSON
                 result_data = json.loads(result)
+                
+                # Check for error message
+                if result_data.get("error", False):
+                    st.error(result_data.get("message", "Unknown error occurred"))
+                    st.stop()
+                
                 st.success("🎉 Analysis complete!")
                 
                 # Display prediction summary
@@ -157,22 +155,40 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 st.markdown(f"**Anomaly Score**: `{result_data['anomaly_score']:.4f}`")
                 st.markdown(f"**Explanation**: {result_data['explanation']}")
                 
-                # Display SHAP Feature Importance plot
-                st.subheader("📊 SHAP Feature Importance")
-                try:
-                    feature_img = BytesIO(base64.b64decode(result_data['feature_importance_b64']))
-                    st.image(feature_img)
-                except Exception as e:
-                    st.warning(f"⚠ Could not load feature importance plot: {e}")
+                # Display top features (if available)
+                if 'top_features' in result_data:
+                    st.subheader("🔝 Top Features")
+                    for i, feature in enumerate(result_data['top_features']):
+                        if 'feature_values' in result_data and i < len(result_data['feature_values']):
+                            st.markdown(f"- **{feature}**: `{result_data['feature_values'][i]:.4f}`")
+                        else:
+                            st.markdown(f"- **{feature}**")
                 
-                # Display SHAP Waterfall plot
-                st.subheader("🔍 SHAP Waterfall Plot")
-                try:
-                    waterfall_img = BytesIO(base64.b64decode(result_data['waterfall_b64']))
-                    st.image(waterfall_img)
-                except Exception as e:                   
-                    st.warning(f"⚠ Could not load waterfall plot: {e}")
-                    
+                # Check if this is a text-only response
+                is_text_only = result_data.get('is_text_only', False)
+                
+                # Display SHAP Feature Importance plot (if available)
+                if not is_text_only and 'feature_importance_b64' in result_data:
+                    st.subheader("📊 SHAP Feature Importance")
+                    try:
+                        feature_img = BytesIO(base64.b64decode(result_data['feature_importance_b64']))
+                        st.image(feature_img)
+                    except Exception as e:
+                        st.warning(f"⚠ Could not load feature importance plot: {e}")
+                
+                # Display SHAP Waterfall plot (if available)
+                if not is_text_only and 'waterfall_b64' in result_data and not result_data.get('is_reduced', False):
+                    st.subheader("🔍 SHAP Waterfall Plot")
+                    try:
+                        waterfall_img = BytesIO(base64.b64decode(result_data['waterfall_b64']))
+                        st.image(waterfall_img)
+                    except Exception as e:                   
+                        st.warning(f"⚠ Could not load waterfall plot: {e}")
+                
+                # Display a note if we're showing reduced data
+                if result_data.get('is_reduced', False):
+                    st.info("ℹ️ Note: Some visualizations were simplified or omitted due to size constraints.")
+                
             except (json.JSONDecodeError, KeyError) as e:
                 # If it's not valid JSON or doesn't have the expected fields, show the result as is
                 st.error(f"❌ Job failed or returned unexpected format: {e}")
@@ -180,12 +196,15 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 st.code(result)
                 
                 # Add options to debug or view the Databricks run
-                if "run_page_url" in result:
+                if isinstance(result, dict) and "run_page_url" in result:
                     st.markdown(f"[View job details in Databricks]({result['run_page_url']})")
                     
                 # Add inspection of the result
                 st.subheader("Debugging Info")
-                st.json(result)
+                if isinstance(result, dict):
+                    st.json(result)
+                else:
+                    st.code(result)
     else:
         st.warning("📱 Please enter a valid phone number.")
 
