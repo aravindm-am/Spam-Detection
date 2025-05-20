@@ -7,7 +7,6 @@ import os
 from databricks import sql
 import requests
 import time
-import json
 
 # Load Databricks secrets
 DATABRICKS_HOST = st.secrets["databricks_host"]
@@ -85,26 +84,11 @@ def run_notebook(phone_number):
             break
         time.sleep(5)
 
-    # result = status_response.json()
-    # st.info(f"result={result}")
-    # # notebook_output = result.get("notebook_output", {})
-    # notebook_output_state = result.get("state", {})
-    # # notebook_output=notebook_output.get("result_state")
-    # st.info(f"notebook_output_state={notebook_output_state}")    
-    
     result = status_response.json()
     st.info(f"result={result}")
     notebook_output = result.get("notebook_output", {})
-    result_json = notebook_output.get("result", "{}")
-    st.info(f"result_json={result_json}")
- 
-    try:
-        return json.loads(result_json)        
-    except Exception as e:
-        st.error(f"❌ Failed to parse notebook output: {e}")
-        return None
-
-    # return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
+    st.info(f"notebook_output={notebook_output}")    
+    return notebook_output.get("result", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
@@ -121,54 +105,50 @@ phone_number = st.text_input("Enter Phone Number to Check")
 #         st.warning("Please enter a phone number.")
 
 if st.button("Run Fraud Check", key="run_check_button"):
-    if phone_number.strip():
-        with st.spinner("Running analysis on Databricks..."):
+    if phone_number.strip():        with st.spinner("Running analysis on Databricks..."):
             result = run_notebook(phone_number.strip())
-            # if result == "SUCCESS":
-            #     st.success("🎉 Analysis complete!")
-
-            #     # Load prediction result
-            #     try:
-            #         result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
-            #         row = result_df.iloc[0]
-            #         st.subheader("📞 Prediction Summary")
-            #         st.markdown(f"**Phone Number**: `{row['caller']}`")
-            #         st.markdown(f"**Prediction**: `{row['prediction']}`")
-            #         st.markdown(f"**Anomaly Score**: `{row['anomaly_score']:.4f}`")
-            #         st.markdown(f"**Explanation**: {row['explanation']}")
-            #     except Exception as e:
-            #         st.error(f"❌ Failed to read prediction: {e}")
-
-            #     # Load SHAP plots
-            #     st.subheader("📊 SHAP Feature Importance")
-            #     try:
-            #         st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
-            #     except Exception as e:
-            #         st.warning(f"⚠ Could not load feature importance plot: {e}")
-
-            #     st.subheader("🔍 SHAP Waterfall Plot")
-            #     try:
-            #         st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")                    
-            #     except Exception as e:
-            #         st.warning(f"⚠ Could not load waterfall plot: {e}")
-
-            if result and result.get("status") == "success":
+            
+            # Check if the result could be a JSON string
+            try:
+                import json
+                import base64
+                from io import BytesIO
+                
+                # Try to parse as JSON
+                result_data = json.loads(result)
                 st.success("🎉 Analysis complete!")
-             
+                
+                # Display prediction summary
                 st.subheader("📞 Prediction Summary")
-                st.markdown(f"**Phone Number**: `{result['caller']}`")
-                st.markdown(f"**Prediction**: `{result['prediction']}`")
-                st.markdown(f"**Anomaly Score**: `{result['anomaly_score']:.4f}`")
-                st.markdown(f"**Explanation**: {result['explanation']}")
-             
-                # Render SHAP bar plot
+                st.markdown(f"**Phone Number**: `{result_data['phone_number']}`")
+                st.markdown(f"**Prediction**: `{result_data['prediction']}`")
+                st.markdown(f"**Anomaly Score**: `{result_data['anomaly_score']:.4f}`")
+                st.markdown(f"**Explanation**: {result_data['explanation']}")
+                
+                # Display SHAP Feature Importance plot
                 st.subheader("📊 SHAP Feature Importance")
-                st.image(f"data:image/png;base64,{result['bar_plot_base64']}")
-             
-                # Render SHAP waterfall plot
+                try:
+                    feature_img = BytesIO(base64.b64decode(result_data['feature_importance_b64']))
+                    st.image(feature_img)
+                except Exception as e:
+                    st.warning(f"⚠ Could not load feature importance plot: {e}")
+                
+                # Display SHAP Waterfall plot
                 st.subheader("🔍 SHAP Waterfall Plot")
-                st.image(f"data:image/png;base64,{result['waterfall_plot_base64']}")            
+                try:
+                    waterfall_img = BytesIO(base64.b64decode(result_data['waterfall_b64']))
+                    st.image(waterfall_img)
+                except Exception as e:
+                    st.warning(f"⚠ Could not load waterfall plot: {e}")
+                    
+            except (json.JSONDecodeError, KeyError) as e:
+                # If it's not valid JSON or doesn't have the expected fields, show the result as is
+                st.error(f"❌ Job failed or returned unexpected format: {result}")
+                st.info("Response details (for debugging):")
+                st.code(result)
             else:
                 st.error(f"❌ Job failed: {result}")
     else:
         st.warning("📱 Please enter a valid phone number.")
+
+
