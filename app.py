@@ -153,7 +153,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                         return False
                 
                 # Define file paths
-                dbfs_base = "/dbfs/Workspace/Users/aravind.menon@subex.com/Spam Detection"
+                dbfs_base = "/Workspace/Users/aravind.menon@subex.com/Spam Detection"
                 results_path = f"{dbfs_base}/sample_number_predictions.csv"
                 feature_plot_path = f"{dbfs_base}/feature_importance.png"
                 waterfall_plot_path = f"{dbfs_base}/waterfall_plot.png"
