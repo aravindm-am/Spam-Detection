@@ -90,7 +90,7 @@ def run_notebook(phone_number):
     notebook_output_state = result.get("state", {})
     #notebook_output=notebook_output.get("result_state")
     st.info(f"notebook_output_state={notebook_output_state}")    
-    return notebook_output.get("result_state", "✅ Job completed, but no output was returned.")
+    return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
