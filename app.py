@@ -7,6 +7,7 @@ import os
 from databricks import sql
 import requests
 import time
+import json
 
 # Load Databricks secrets
 DATABRICKS_HOST = st.secrets["databricks_host"]
