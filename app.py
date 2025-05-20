@@ -82,12 +82,42 @@ def run_notebook(phone_number):
         st.info(f"run_state={run_state}")    
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
-        time.sleep(5)
-
-    result = status_response.json()
+        time.sleep(5)    result = status_response.json()
     st.info(f"result={result}")
     notebook_output = result.get("notebook_output", {})
-    st.info(f"notebook_output={notebook_output}")    
+    st.info(f"notebook_output={notebook_output}")
+    
+    # Try to get logs from the notebook run for debugging
+    run_id = result.get("run_id")
+    if run_id:
+        try:
+            logs_response = requests.get(
+                f"{DATABRICKS_HOST}/api/2.0/jobs/runs/get-output",
+                headers=headers,
+                params={"run_id": run_id}
+            )
+            if logs_response.status_code == 200:
+                logs_data = logs_response.json()
+                st.info(f"Notebook logs retrieved: {len(logs_data.get('notebook_output', {}).get('result', ''))} characters")
+        except Exception as e:
+            st.warning(f"Could not retrieve logs: {e}")
+    
+    # Check if we have output data
+    if not notebook_output or "result" not in notebook_output:
+        # Check if there's any error information in the result
+        if "error_message" in result.get("state", {}):
+            return f"❌ Error in notebook: {result['state']['error_message']}"
+        
+        # Try to extract any useful info from the run state
+        run_state_msg = result.get("state", {}).get("state_message", "")
+        if run_state_msg:
+            return f"ℹ️ {run_state_msg}"
+            
+        # Check if we can get any output details from the run page
+        run_page_url = result.get("run_page_url")
+        if run_page_url:
+            st.info(f"You can check the run details at: {run_page_url}")
+            
     return notebook_output.get("result", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
@@ -105,7 +135,7 @@ phone_number = st.text_input("Enter Phone Number to Check")
 #         st.warning("Please enter a phone number.")
 
 if st.button("Run Fraud Check", key="run_check_button"):
-    if phone_number.strip():
+    if phone_number.strip():        
         with st.spinner("Running analysis on Databricks..."):
             result = run_notebook(phone_number.strip())
             
@@ -139,16 +169,22 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 try:
                     waterfall_img = BytesIO(base64.b64decode(result_data['waterfall_b64']))
                     st.image(waterfall_img)
-                except Exception as e:
+                except Exception as e:                   
                     st.warning(f"⚠ Could not load waterfall plot: {e}")
                     
             except (json.JSONDecodeError, KeyError) as e:
                 # If it's not valid JSON or doesn't have the expected fields, show the result as is
-                st.error(f"❌ Job failed or returned unexpected format: {result}")
+                st.error(f"❌ Job failed or returned unexpected format: {e}")
                 st.info("Response details (for debugging):")
                 st.code(result)
-            else:
-                st.error(f"❌ Job failed: {result}")
+                
+                # Add options to debug or view the Databricks run
+                if "run_page_url" in result:
+                    st.markdown(f"[View job details in Databricks]({result['run_page_url']})")
+                    
+                # Add inspection of the result
+                st.subheader("Debugging Info")
+                st.json(result)
     else:
         st.warning("📱 Please enter a valid phone number.")
 
