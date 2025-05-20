@@ -77,13 +77,17 @@ def run_notebook(phone_number):
             f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
             headers=headers
         )
+        print(status_response)
         run_state = status_response.json()["state"]["life_cycle_state"]
+        print(run_State)
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
         time.sleep(5)
 
     result = status_response.json()
+    print(result)
     notebook_output = result.get("notebook_output", {})
+    print(notebook_output)
     return notebook_output.get("result", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
