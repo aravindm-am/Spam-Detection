@@ -123,7 +123,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                         # Get file info
                         info_response = requests.get(
                             f"{DATABRICKS_HOST}/api/2.0/dbfs/get-status",
-                            headers=headers,
+                            headers=headers_global,
                             json={"path": dbfs_path}
                         )
                         
@@ -134,7 +134,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                         # Download file
                         download_response = requests.post(
                             f"{DATABRICKS_HOST}/api/2.0/dbfs/read",
-                            headers=headers,
+                            headers=headers_global,
                             json={"path": dbfs_path, "offset": 0, "length": 10000000}  # Adjust length as needed
                         )
                         
