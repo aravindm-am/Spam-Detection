@@ -105,7 +105,8 @@ phone_number = st.text_input("Enter Phone Number to Check")
 #         st.warning("Please enter a phone number.")
 
 if st.button("Run Fraud Check", key="run_check_button"):
-    if phone_number.strip():        with st.spinner("Running analysis on Databricks..."):
+    if phone_number.strip():
+        with st.spinner("Running analysis on Databricks..."):
             result = run_notebook(phone_number.strip())
             
             # Check if the result could be a JSON string
