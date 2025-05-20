@@ -34,6 +34,8 @@ if conn:
     st.success("✅ Successfully connected to Databricks.")
 else:
     st.stop()  # Do not continue if connection fails
+    
+headers_global = {}
 
 # Function to run the notebook as a one-time job
 def run_notebook(phone_number):
@@ -41,6 +43,8 @@ def run_notebook(phone_number):
         "Authorization": f"Bearer {DATABRICKS_TOKEN}",
         "Content-Type": "application/json"
     }
+
+    headers_global=headers
 
     # Cluster ID of your existing cluster
     EXISTING_CLUSTER_ID = "0408-094007-uows7xsz"
