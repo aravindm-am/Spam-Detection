@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 from databricks import sql
 import requests
-import time
+import time 
 from minio import Minio
 
 # Initialize client
@@ -16,7 +16,7 @@ minio_client = Minio(
     secret_key="minio123",
     secure=False  # Set to True if using HTTPS
 )
- 
+
 # Load Databricks secrets
 DATABRICKS_HOST = st.secrets["databricks_host"]
 DATABRICKS_PATH = st.secrets["databricks_http_path"]
@@ -95,9 +95,11 @@ def run_notebook(phone_number):
 
     result = status_response.json()
     st.info(f"result={result}")
-    notebook_output = result.get("notebook_output", {})
-    st.info(f"notebook_output={notebook_output}")    
-    return notebook_output.get("result", "✅ Job completed, but no output was returned.")
+    #notebook_output = result.get("notebook_output", {})
+    notebook_output_state = result.get("state", {})
+    #notebook_output=notebook_output.get("result_state")
+    st.info(f"notebook_output_state={notebook_output_state}")    
+    return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
@@ -118,64 +120,11 @@ if st.button("Run Fraud Check", key="run_check_button"):
         with st.spinner("Running analysis on Databricks..."):
             result = run_notebook(phone_number.strip())
             if result == "SUCCESS":
-                st.success("🎉 Analysis complete!")                # Create local directory for temporary files
-                import tempfile
-                temp_dir = tempfile.mkdtemp()
-                
-                # Function to download file from Databricks DBFS
-                def download_from_dbfs(dbfs_path, local_path):
-                    try:
-                        # Get file info
-                        info_response = requests.get(
-                            f"{DATABRICKS_HOST}/api/2.0/dbfs/get-status",
-                            headers=headers,
-                            json={"path": dbfs_path}
-                        )
-                        
-                        if info_response.status_code != 200:
-                            st.warning(f"⚠️ File not found on DBFS: {dbfs_path}")
-                            return False
-                        
-                        # Download file
-                        download_response = requests.post(
-                            f"{DATABRICKS_HOST}/api/2.0/dbfs/read",
-                            headers=headers,
-                            json={"path": dbfs_path, "offset": 0, "length": 10000000}  # Adjust length as needed
-                        )
-                        
-                        if download_response.status_code != 200:
-                            st.warning(f"⚠️ Failed to download file: {dbfs_path}")
-                            return False
-                        
-                        # Save file locally
-                        data = download_response.json().get("data")
-                        import base64
-                        with open(local_path, "wb") as f:
-                            f.write(base64.b64decode(data))
-                        return True
-                    except Exception as e:
-                        st.warning(f"⚠️ Error downloading file: {str(e)}")
-                        return False
-                
-                # Define file paths
-                dbfs_base = "/dbfs/Workspace/Users/aravind.menon@subex.com/Spam Detection"
-                results_path = f"{dbfs_base}/sample_number_predictions.csv"
-                feature_plot_path = f"{dbfs_base}/feature_importance.png"
-                waterfall_plot_path = f"{dbfs_base}/waterfall_plot.png"
-                
-                local_results = f"{temp_dir}/sample_number_predictions.csv"
-                local_feature_plot = f"{temp_dir}/feature_importance.png"
-                local_waterfall_plot = f"{temp_dir}/waterfall_plot.png"
-                
+                st.success("🎉 Analysis complete!")
+
                 # Load prediction result
                 try:
-                    # Try downloading from DBFS first
-                    if download_from_dbfs(results_path, local_results):
-                        result_df = pd.read_csv(local_results)
-                    else:
-                        # Fallback to direct access if available (depends on deployment)
-                        result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
-                    
+                    result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
                     row = result_df.iloc[0]
                     st.subheader("📞 Prediction Summary")
                     st.markdown(f"**Phone Number**: `{row['caller']}`")
@@ -188,23 +137,13 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 # Load SHAP plots
                 st.subheader("📊 SHAP Feature Importance")
                 try:
-                    # Try downloading from DBFS first
-                    if download_from_dbfs(feature_plot_path, local_feature_plot):
-                        st.image(local_feature_plot)
-                    else:
-                        # Fallback to direct access if available
-                        st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
+                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
                 except Exception as e:
                     st.warning(f"⚠ Could not load feature importance plot: {e}")
 
                 st.subheader("🔍 SHAP Waterfall Plot")
                 try:
-                    # Try downloading from DBFS first
-                    if download_from_dbfs(waterfall_plot_path, local_waterfall_plot):
-                        st.image(local_waterfall_plot)
-                    else:
-                        # Fallback to direct access if available
-                        st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")
+                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")                    
                 except Exception as e:
                     st.warning(f"⚠ Could not load waterfall plot: {e}")
             else:
