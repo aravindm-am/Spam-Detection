@@ -89,7 +89,7 @@ def run_notebook(phone_number):
     #notebook_output = result.get("notebook_output", {})
     notebook_output_state = result.get("state", {})
     #notebook_output=notebook_output.get("result_state")
-    st.info(f"notebook_output={notebook_output}")    
+    st.info(f"notebook_output={notebook_output_state}")    
     return notebook_output.get("result_state", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
