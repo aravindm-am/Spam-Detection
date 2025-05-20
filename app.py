@@ -79,7 +79,7 @@ def run_notebook(phone_number):
         )
         st.info(f"status_response={status_response}")
         run_state = status_response.json()["state"]["life_cycle_state"]
-        st.info(f"run_State={run_State}")    
+        st.info(f"run_state={run_state}")    
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
         time.sleep(5)
