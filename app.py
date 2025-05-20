@@ -96,9 +96,10 @@ def run_notebook(phone_number):
     st.info(f"result={result}")
     notebook_output = result.get("notebook_output", {})
     result_json = notebook_output.get("result", "{}")
+    st.info(f"result_json={result_json}")
  
     try:
-        return json.loads(result_json)
+        return json.loads(result_json)        
     except Exception as e:
         st.error(f"❌ Failed to parse notebook output: {e}")
         return None
