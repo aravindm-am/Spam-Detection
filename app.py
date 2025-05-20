@@ -82,43 +82,12 @@ def run_notebook(phone_number):
         st.info(f"run_state={run_state}")    
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
-        time.sleep(5)   
+        time.sleep(5)
+
     result = status_response.json()
     st.info(f"result={result}")
     notebook_output = result.get("notebook_output", {})
-    st.info(f"notebook_output={notebook_output}")
-    
-    # Try to get logs from the notebook run for debugging
-    run_id = result.get("run_id")
-    if run_id:
-        try:
-            logs_response = requests.get(
-                f"{DATABRICKS_HOST}/api/2.0/jobs/runs/get-output",
-                headers=headers,
-                params={"run_id": run_id}
-            )
-            if logs_response.status_code == 200:
-                logs_data = logs_response.json()
-                st.info(f"Notebook logs retrieved: {len(logs_data.get('notebook_output', {}).get('result', ''))} characters")
-        except Exception as e:
-            st.warning(f"Could not retrieve logs: {e}")
-    
-    # Check if we have output data
-    if not notebook_output or "result" not in notebook_output:
-        # Check if there's any error information in the result
-        if "error_message" in result.get("state", {}):
-            return f"❌ Error in notebook: {result['state']['error_message']}"
-        
-        # Try to extract any useful info from the run state
-        run_state_msg = result.get("state", {}).get("state_message", "")
-        if run_state_msg:
-            return f"ℹ️ {run_state_msg}"
-            
-        # Check if we can get any output details from the run page
-        run_page_url = result.get("run_page_url")
-        if run_page_url:
-            st.info(f"You can check the run details at: {run_page_url}")
-            
+    st.info(f"notebook_output={notebook_output}")    
     return notebook_output.get("result", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
@@ -136,56 +105,102 @@ phone_number = st.text_input("Enter Phone Number to Check")
 #         st.warning("Please enter a phone number.")
 
 if st.button("Run Fraud Check", key="run_check_button"):
-    if phone_number.strip():        
+    if phone_number.strip():
         with st.spinner("Running analysis on Databricks..."):
             result = run_notebook(phone_number.strip())
-            
-            # Check if the result could be a JSON string
-            try:
-                import json
-                import base64
-                from io import BytesIO
+            if result == "SUCCESS":
+                st.success("🎉 Analysis complete!")                # Create local directory for temporary files
+                import tempfile
+                temp_dir = tempfile.mkdtemp()
                 
-                # Try to parse as JSON
-                result_data = json.loads(result)
-                st.success("🎉 Analysis complete!")
+                # Function to download file from Databricks DBFS
+                def download_from_dbfs(dbfs_path, local_path):
+                    try:
+                        # Get file info
+                        info_response = requests.get(
+                            f"{DATABRICKS_HOST}/api/2.0/dbfs/get-status",
+                            headers=headers,
+                            json={"path": dbfs_path}
+                        )
+                        
+                        if info_response.status_code != 200:
+                            st.warning(f"⚠️ File not found on DBFS: {dbfs_path}")
+                            return False
+                        
+                        # Download file
+                        download_response = requests.post(
+                            f"{DATABRICKS_HOST}/api/2.0/dbfs/read",
+                            headers=headers,
+                            json={"path": dbfs_path, "offset": 0, "length": 10000000}  # Adjust length as needed
+                        )
+                        
+                        if download_response.status_code != 200:
+                            st.warning(f"⚠️ Failed to download file: {dbfs_path}")
+                            return False
+                        
+                        # Save file locally
+                        data = download_response.json().get("data")
+                        import base64
+                        with open(local_path, "wb") as f:
+                            f.write(base64.b64decode(data))
+                        return True
+                    except Exception as e:
+                        st.warning(f"⚠️ Error downloading file: {str(e)}")
+                        return False
                 
-                # Display prediction summary
-                st.subheader("📞 Prediction Summary")
-                st.markdown(f"**Phone Number**: `{result_data['phone_number']}`")
-                st.markdown(f"**Prediction**: `{result_data['prediction']}`")
-                st.markdown(f"**Anomaly Score**: `{result_data['anomaly_score']:.4f}`")
-                st.markdown(f"**Explanation**: {result_data['explanation']}")
+                # Define file paths
+                dbfs_base = "/dbfs/Workspace/Users/aravind.menon@subex.com/Spam Detection"
+                results_path = f"{dbfs_base}/sample_number_predictions.csv"
+                feature_plot_path = f"{dbfs_base}/feature_importance.png"
+                waterfall_plot_path = f"{dbfs_base}/waterfall_plot.png"
                 
-                # Display SHAP Feature Importance plot
+                local_results = f"{temp_dir}/sample_number_predictions.csv"
+                local_feature_plot = f"{temp_dir}/feature_importance.png"
+                local_waterfall_plot = f"{temp_dir}/waterfall_plot.png"
+                
+                # Load prediction result
+                try:
+                    # Try downloading from DBFS first
+                    if download_from_dbfs(results_path, local_results):
+                        result_df = pd.read_csv(local_results)
+                    else:
+                        # Fallback to direct access if available (depends on deployment)
+                        result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
+                    
+                    row = result_df.iloc[0]
+                    st.subheader("📞 Prediction Summary")
+                    st.markdown(f"**Phone Number**: `{row['caller']}`")
+                    st.markdown(f"**Prediction**: `{row['prediction']}`")
+                    st.markdown(f"**Anomaly Score**: `{row['anomaly_score']:.4f}`")
+                    st.markdown(f"**Explanation**: {row['explanation']}")
+                except Exception as e:
+                    st.error(f"❌ Failed to read prediction: {e}")
+
+                # Load SHAP plots
                 st.subheader("📊 SHAP Feature Importance")
                 try:
-                    feature_img = BytesIO(base64.b64decode(result_data['feature_importance_b64']))
-                    st.image(feature_img)
+                    # Try downloading from DBFS first
+                    if download_from_dbfs(feature_plot_path, local_feature_plot):
+                        st.image(local_feature_plot)
+                    else:
+                        # Fallback to direct access if available
+                        st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
                 except Exception as e:
                     st.warning(f"⚠ Could not load feature importance plot: {e}")
-                
-                # Display SHAP Waterfall plot
+
                 st.subheader("🔍 SHAP Waterfall Plot")
                 try:
-                    waterfall_img = BytesIO(base64.b64decode(result_data['waterfall_b64']))
-                    st.image(waterfall_img)
-                except Exception as e:                   
+                    # Try downloading from DBFS first
+                    if download_from_dbfs(waterfall_plot_path, local_waterfall_plot):
+                        st.image(local_waterfall_plot)
+                    else:
+                        # Fallback to direct access if available
+                        st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")
+                except Exception as e:
                     st.warning(f"⚠ Could not load waterfall plot: {e}")
-                    
-            except (json.JSONDecodeError, KeyError) as e:
-                # If it's not valid JSON or doesn't have the expected fields, show the result as is
-                st.error(f"❌ Job failed or returned unexpected format: {e}")
-                st.info("Response details (for debugging):")
-                st.code(result)
-                
-                # Add options to debug or view the Databricks run
-                if "run_page_url" in result:
-                    st.markdown(f"[View job details in Databricks]({result['run_page_url']})")
-                    
-                # Add inspection of the result
-                st.subheader("Debugging Info")
-                st.json(result)
+            else:
+                st.error(f"❌ Job failed: {result}")
     else:
         st.warning("📱 Please enter a valid phone number.")
+
 
