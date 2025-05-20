@@ -8,7 +8,9 @@ from databricks import sql
 import requests
 import time 
 from minio import Minio
+import tempfile
 
+ 
 # Initialize client
 minio_client = Minio(
     "10.113.52.113:32215",
@@ -16,6 +18,16 @@ minio_client = Minio(
     secret_key="minio123",
     secure=False  # Set to True if using HTTPS
 )
+
+def download_from_minio(object_name):
+    try:
+        # Save to a temporary file
+        local_path = os.path.join(tempfile.gettempdir(), object_name)
+        minio_client.fget_object("ais-test", object_name, local_path)
+        return local_path
+    except Exception as e:
+        st.warning(f"⚠️ Could not download {object_name} from MinIO: {e}")
+        return None
 
 # Load Databricks secrets
 DATABRICKS_HOST = st.secrets["databricks_host"]
@@ -124,7 +136,10 @@ if st.button("Run Fraud Check", key="run_check_button"):
 
                 # Load prediction result
                 try:
-                    result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
+                    csv_path = download_from_minio("sample_number_predictions.csv")
+                    if csv_path:
+                        result_df = pd.read_csv(csv_path)
+                    #result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
                     row = result_df.iloc[0]
                     st.subheader("📞 Prediction Summary")
                     st.markdown(f"**Phone Number**: `{row['caller']}`")
@@ -137,13 +152,19 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 # Load SHAP plots
                 st.subheader("📊 SHAP Feature Importance")
                 try:
-                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
+                    feature_path = download_from_minio("feature_importance.png")
+                    if feature_path:
+                        st.image(feature_path)
+                    #st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
                 except Exception as e:
                     st.warning(f"⚠ Could not load feature importance plot: {e}")
 
                 st.subheader("🔍 SHAP Waterfall Plot")
                 try:
-                    st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")                    
+                    waterfall_path = download_from_minio("waterfall_plot.png")
+                    if waterfall_path:
+                        st.image(waterfall_path)
+                    #st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")                    
                 except Exception as e:
                     st.warning(f"⚠ Could not load waterfall plot: {e}")
             else:
