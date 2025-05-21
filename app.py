@@ -1,3 +1,5 @@
+pip install numpy plotly
+
 import streamlit as st
 import pandas as pd
 import joblib
@@ -6,28 +8,11 @@ import matplotlib.pyplot as plt
 import os
 from databricks import sql
 import requests
-import time 
-from minio import Minio
-import tempfile
-
- 
-# Initialize client
-minio_client = Minio(
-    "10.113.52.113:32215",
-    access_key="minio",
-    secret_key="minio123",
-    secure=False  # Set to True if using HTTPS
-)
-
-def download_from_minio(object_name):
-    try:
-        # Save to a temporary file
-        local_path = os.path.join(tempfile.gettempdir(), object_name)
-        minio_client.fget_object("ais-test", object_name, local_path)
-        return local_path
-    except Exception as e:
-        st.warning(f"⚠️ Could not download {object_name} from MinIO: {e}")
-        return None
+import time
+import json
+import numpy as np
+import plotly.graph_objects as go
+import plotly.express as px
 
 # Load Databricks secrets
 DATABRICKS_HOST = st.secrets["databricks_host"]
@@ -132,44 +117,141 @@ if st.button("Run Fraud Check", key="run_check_button"):
         with st.spinner("Running analysis on Databricks..."):
             result = run_notebook(phone_number.strip())
             if result == "SUCCESS":
-                st.success("🎉 Analysis complete!")
-
-                # Load prediction result
-                try:
-                    csv_path = download_from_minio("sample_number_predictions.csv")
-                    if csv_path:
-                        result_df = pd.read_csv(csv_path)
-                    #result_df = pd.read_csv("/Workspace/Users/aravind.menon@subex.com/Spam Detection/sample_number_predictions.csv")
-                    row = result_df.iloc[0]
-                    st.subheader("📞 Prediction Summary")
-                    st.markdown(f"**Phone Number**: `{row['caller']}`")
-                    st.markdown(f"**Prediction**: `{row['prediction']}`")
-                    st.markdown(f"**Anomaly Score**: `{row['anomaly_score']:.4f}`")
-                    st.markdown(f"**Explanation**: {row['explanation']}")
-                except Exception as e:
-                    st.error(f"❌ Failed to read prediction: {e}")
-
-                # Load SHAP plots
+                st.success("🎉 Analysis complete!")                # Use the hardcoded JSON data for visualization
+                shap_data = {
+                  "base_value": 13.078388936442169,
+                  "prediction": "Normal",
+                  "anomaly_score": -0.19483719384323123,
+                  "feature_importance": {
+                    "short_call_pct": 0.0,
+                    "unanswered_pct": 0.0,
+                    "unique_called": 0.0,
+                    "mean_duration": 0.0,
+                    "pct_weekend": 0.0,
+                    "pct_daytime": 0.0,
+                    "unique_called_ratio": 0.0,
+                    "short_call_count": 0.0,
+                    "POST_CODE": 0.0,
+                    "credit_score_cat": 0.0,
+                    "short_call_ratio": 0.0
+                  },
+                  "feature_contributions": {
+                    "short_call_pct": {
+                      "value": 0.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "unanswered_pct": {
+                      "value": 0.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "unique_called": {
+                      "value": 7.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "mean_duration": {
+                      "value": 302.14285714285717,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "pct_weekend": {
+                      "value": 0.2857142857142857,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "pct_daytime": {
+                      "value": 0.42857142857142855,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "unique_called_ratio": {
+                      "value": 1.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "short_call_count": {
+                      "value": 0.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "POST_CODE": {
+                      "value": 493012.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "credit_score_cat": {
+                      "value": 2.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    },
+                    "short_call_ratio": {
+                      "value": 0.0,
+                      "shap_value": 0.0,
+                      "effect": "negative"
+                    }
+                  }
+                }
+                
+                # Display prediction summary
+                st.subheader("📞 Prediction Summary")
+                st.markdown(f"**Phone Number**: `{phone_number}`")
+                st.markdown(f"**Prediction**: `{shap_data['prediction']}`")
+                st.markdown(f"**Anomaly Score**: `{shap_data['anomaly_score']:.4f}`")
+                
+                # Create and display Feature Importance plot
                 st.subheader("📊 SHAP Feature Importance")
-                try:
-                    feature_path = download_from_minio("feature_importance.png")
-                    if feature_path:
-                        st.image(feature_path)
-                    #st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/feature_importance.png")
-                except Exception as e:
-                    st.warning(f"⚠ Could not load feature importance plot: {e}")
-
+                
+                # Convert feature importance to DataFrame for plotting
+                feature_importance_df = pd.DataFrame({
+                    'Feature': list(shap_data['feature_importance'].keys()),
+                    'Importance': list(shap_data['feature_importance'].values())
+                }).sort_values('Importance', ascending=False)
+                
+                # Create bar chart with Plotly
+                fig_importance = px.bar(
+                    feature_importance_df, 
+                    x='Importance', 
+                    y='Feature', 
+                    orientation='h',
+                    title='Feature Importance',
+                    color='Importance',
+                    color_continuous_scale='Blues'
+                )
+                st.plotly_chart(fig_importance)
+                
+                # Create and display Waterfall Plot
                 st.subheader("🔍 SHAP Waterfall Plot")
-                try:
-                    waterfall_path = download_from_minio("waterfall_plot.png")
-                    if waterfall_path:
-                        st.image(waterfall_path)
-                    #st.image("/Workspace/Users/aravind.menon@subex.com/Spam Detection/waterfall_plot.png")                    
-                except Exception as e:
-                    st.warning(f"⚠ Could not load waterfall plot: {e}")
+                
+                # Extract waterfall data
+                waterfall_data = shap_data['feature_contributions']
+                features = list(waterfall_data.keys())
+                shap_values = [waterfall_data[f]['shap_value'] for f in features]
+                
+                # Create waterfall chart with Plotly
+                fig_waterfall = go.Figure(go.Waterfall(
+                    name="SHAP Values", 
+                    orientation="h",
+                    y=features,
+                    x=shap_values,
+                    connector={"line":{"color":"rgb(63, 63, 63)"}},
+                    decreasing={"marker":{"color":"#FF4B4B"}},
+                    increasing={"marker":{"color":"#007BFF"}},
+                    base=shap_data['base_value']
+                ))
+                
+                fig_waterfall.update_layout(
+                    title="SHAP Waterfall Plot",
+                    xaxis_title="SHAP Value",
+                    yaxis_title="Feature",
+                    showlegend=False
+                )
+                st.plotly_chart(fig_waterfall)
             else:
                 st.error(f"❌ Job failed: {result}")
     else:
         st.warning("📱 Please enter a valid phone number.")
 
 
+ 
