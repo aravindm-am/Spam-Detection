@@ -102,6 +102,7 @@ def run_notebook(phone_number):
     # notebook_output_state = result.get("state", {})
     # return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
     result = status_response.json()
+    st.info(f"result ==== {result}")
     notebook_output_state = result.get("state", {})
     result_state = notebook_output_state.get("result_state", "UNKNOWN")
     
@@ -147,7 +148,7 @@ phone_number = st.text_input("Enter Phone Number to Check")
 if st.button("Run Fraud Check", key="run_check_button"):
     if phone_number.strip():
         with st.spinner("Subex Spam Scoring Started in Databricks..."):
-            result = run_notebook(phone_number.strip())
+            result, notebook_output = run_notebook(phone_number.strip())
             if result == "SUCCESS":
                 st.success("🎉 Analysis complete!")                # Use the hardcoded JSON data for visualization
                 shap_data = {
@@ -226,6 +227,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                   },
                   "explanation": "Caller 917267973248 is labeled as an 'Anomaly' in the telecom fraud detection system due to having a high unique_called value of 7.0, which is unusual compared to normal calling patterns and may indicate suspicious behavior."
                 }
+                shap_data = notebook_output
                   # Display prediction summary
                 st.subheader("📞 Prediction Summary")
                 st.markdown(f"**Phone Number**: `{phone_number}`")
