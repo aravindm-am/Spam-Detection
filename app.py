@@ -115,7 +115,7 @@ phone_number = st.text_input("Enter Phone Number to Check")
 
 if st.button("Run Fraud Check", key="run_check_button"):
     if phone_number.strip():
-        with st.spinner("Running analysis on Databricks..."):
+        with st.spinner("Subex Spam Scoring Started in Databricks..."):
             result = run_notebook(phone_number.strip())
             if result == "SUCCESS":
                 st.success("🎉 Analysis complete!")                # Use the hardcoded JSON data for visualization
