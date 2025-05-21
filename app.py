@@ -75,8 +75,8 @@ def run_notebook(phone_number):
     run_id = response.json()["run_id"]
     
     # Create a status placeholder for the user-friendly message
-    status_placeholder = st.empty()
-    status_placeholder.info("🔍 Subex Spam Scoring Started in Databricks...")
+    # status_placeholder = st.empty()
+    # status_placeholder.info("🔍 Subex Spam Scoring Started in Databricks...")
 
     # Poll for status silently (without showing technical details)
     while True:
@@ -106,7 +106,7 @@ phone_number = st.text_input("Enter Phone Number to Check")
 
 # if st.button("Run Fraud Check"):
 #     if phone_number.strip():
-#         with st.spinner("Running analysis on Databricks..."):
+#         with st.spinner("Subex Spam Scoring Started in Databricks..."):
 #             output = run_notebook(phone_number.strip())
 #             st.success("🎉 Job finished!")
 #             st.code(output)
