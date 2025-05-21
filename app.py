@@ -73,20 +73,20 @@ def run_notebook(phone_number):
         return None
 
     run_id = response.json()["run_id"]
-    st.info(f"🚀 Job started (run_id={run_id}). Waiting for completion...")
+    st.info(f"🚀 Subex Spam Scoring Started in Databricks...")
 
     # Poll for status
-    while True:
-        status_response = requests.get(
-            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
-            headers=headers
-        )
-        st.info(f"status_response={status_response}")
-        run_state = status_response.json()["state"]["life_cycle_state"]
-        st.info(f"run_state={run_state}")    
-        if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
-            break
-        time.sleep(5)
+    # while True:
+    #     status_response = requests.get(
+    #         f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
+    #         headers=headers
+    #     )
+    #     st.info(f"status_response={status_response}")
+    #     run_state = status_response.json()["state"]["life_cycle_state"]
+    #     st.info(f"run_state={run_state}")    
+    #     if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
+    #         break
+    #     time.sleep(5)
 
     result = status_response.json()
     st.info(f"result={result}")
