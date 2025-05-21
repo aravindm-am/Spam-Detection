@@ -12,3 +12,4 @@ seaborn
 minio
 numpy
 plotly
+streamlit-shap
