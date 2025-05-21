@@ -90,7 +90,7 @@ def run_notebook(phone_number):
         
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
-        time.sleep(5)
+        time.sleep(1)
       # Clear the status message when done
     status_placeholder.empty()
 
