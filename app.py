@@ -113,11 +113,11 @@ def run_notebook(phone_number):
             f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
             headers=headers
         )
-        print("output_response ====", output_response)
+        st.info(f"output_response ==== {output_response}")
         
         if output_response.status_code == 200:
             notebook_result = output_response.json().get("notebook_output", {})
-            print("output_response ====", notebook_result)
+            st.info(f"output_response ==== {notebook_result}")
             # The result might be in result.data or result.result
             notebook_output = notebook_result.get("result", None)
             
