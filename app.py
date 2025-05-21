@@ -1,3 +1,5 @@
+pip install numpy plotly
+
 import streamlit as st
 import pandas as pd
 import joblib
@@ -132,8 +134,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                     "POST_CODE": 0.0,
                     "credit_score_cat": 0.0,
                     "short_call_ratio": 0.0
-                  },
-                  "feature_contributions": {
+                  },                  "feature_contributions": {
                     "short_call_pct": {
                       "value": 0.0,
                       "shap_value": 0.0,
@@ -189,14 +190,18 @@ if st.button("Run Fraud Check", key="run_check_button"):
                       "shap_value": 0.0,
                       "effect": "negative"
                     }
-                  }
+                  },
+                  "explanation": "The caller is labeled as 'Normal' because the pattern of calling behavior shows normal communication patterns with moderate call duration, a mix of weekend and weekday calls, and no suspicious patterns that would indicate fraudulent activity."
                 }
-                
-                # Display prediction summary
+                  # Display prediction summary
                 st.subheader("📞 Prediction Summary")
                 st.markdown(f"**Phone Number**: `{phone_number}`")
                 st.markdown(f"**Prediction**: `{shap_data['prediction']}`")
                 st.markdown(f"**Anomaly Score**: `{shap_data['anomaly_score']:.4f}`")
+                
+                # Display the explanation if available
+                if 'explanation' in shap_data and shap_data['explanation']:
+                    st.markdown(f"**AI Explanation**: {shap_data['explanation']}")
                 
                 # Create and display Feature Importance plot
                 st.subheader("📊 SHAP Feature Importance")
