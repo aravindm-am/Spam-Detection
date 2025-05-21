@@ -75,7 +75,7 @@ def run_notebook(phone_number):
     run_id = response.json()["run_id"]
     
     # Create a status placeholder for the user-friendly message
-    # status_placeholder = st.empty()
+    status_placeholder = st.empty()
     # status_placeholder.info("🔍 Subex Spam Scoring Started in Databricks...")
 
     # Poll for status silently (without showing technical details)
