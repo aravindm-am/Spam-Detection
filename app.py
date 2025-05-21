@@ -71,29 +71,32 @@ def run_notebook(phone_number):
         st.error("❌ Failed to start Databricks job.")
         st.text(response.text)
         return None
-
+        
     run_id = response.json()["run_id"]
-    st.info(f"🚀 Job started (run_id={run_id}). Waiting for completion...")
+    
+    # Create a status placeholder for the user-friendly message
+    status_placeholder = st.empty()
+    status_placeholder.info("🔍 Subex Spam Scoring Started in Databricks...")
 
-    # Poll for status
+    # Poll for status silently (without showing technical details)
     while True:
         status_response = requests.get(
             f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
             headers=headers
         )
-        st.info(f"status_response={status_response}")
+        
+        # Get state but don't display technical messages
         run_state = status_response.json()["state"]["life_cycle_state"]
-        st.info(f"run_state={run_state}")    
+        
         if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
             break
         time.sleep(5)
+      # Clear the status message when done
+    status_placeholder.empty()
 
     result = status_response.json()
-    st.info(f"result={result}")
-    #notebook_output = result.get("notebook_output", {})
+    # Removed debug info messages
     notebook_output_state = result.get("state", {})
-    #notebook_output=notebook_output.get("result_state")
-    st.info(f"notebook_output_state={notebook_output_state}")    
     return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
 
 # Streamlit UI
