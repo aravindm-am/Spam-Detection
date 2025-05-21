@@ -94,10 +94,41 @@ def run_notebook(phone_number):
       # Clear the status message when done
     status_placeholder.empty()
 
+    # result = status_response.json()
+    # # Removed debug info messages
+
+
+    
+    # notebook_output_state = result.get("state", {})
+    # return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
     result = status_response.json()
-    # Removed debug info messages
     notebook_output_state = result.get("state", {})
-    return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
+    result_state = notebook_output_state.get("result_state", "UNKNOWN")
+    
+    # Get notebook output if available
+    notebook_output = None
+    if result_state == "SUCCESS":
+        # Get notebook output from job result
+        output_response = requests.get(
+            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
+            headers=headers
+        )
+        print("output_response ====", output_response)
+        
+        if output_response.status_code == 200:
+            notebook_result = output_response.json().get("notebook_output", {})
+            print("output_response ====", notebook_result)
+            # The result might be in result.data or result.result
+            notebook_output = notebook_result.get("result", None)
+            
+            # Try to parse the output as JSON if it's a string
+            if isinstance(notebook_output, str):
+                try:
+                    notebook_output = json.loads(notebook_output)
+                except:
+                    pass  # Keep as string if not valid JSON
+    
+    return result_state, notebook_output
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
