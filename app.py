@@ -117,22 +117,23 @@ if st.button("Run Fraud Check", key="run_check_button"):
             if result == "SUCCESS":
                 st.success("🎉 Analysis complete!")                # Use the hardcoded JSON data for visualization
                 shap_data = {
-                  "base_value": 13.078388936442169,
-                  "prediction": "Normal",
-                  "anomaly_score": -0.19483719384323123,
+                  "base_value": 10.546970406720215,
+                  "prediction": "Anomaly",
+                  "anomaly_score": 0.012908768548510419,
                   "feature_importance": {
+                    "mean_duration": 1.762012160930317,
+                    "pct_daytime": 1.702906182524166,
+                    "pct_weekend": 0.16904060471395496,
+                    "POST_CODE": 0.16689157510933,
+                    "credit_score_cat": 0.03107703131856397,
                     "short_call_pct": 0.0,
                     "unanswered_pct": 0.0,
                     "unique_called": 0.0,
-                    "mean_duration": 0.0,
-                    "pct_weekend": 0.0,
-                    "pct_daytime": 0.0,
                     "unique_called_ratio": 0.0,
                     "short_call_count": 0.0,
-                    "POST_CODE": 0.0,
-                    "credit_score_cat": 0.0,
                     "short_call_ratio": 0.0
-                  },                  "feature_contributions": {
+                  },
+                  "feature_contributions": {
                     "short_call_pct": {
                       "value": 0.0,
                       "shap_value": 0.0,
@@ -149,18 +150,18 @@ if st.button("Run Fraud Check", key="run_check_button"):
                       "effect": "negative"
                     },
                     "mean_duration": {
-                      "value": 302.14285714285717,
-                      "shap_value": 0.0,
+                      "value": 268.85714285714283,
+                      "shap_value": -1.762012160930317,
                       "effect": "negative"
                     },
                     "pct_weekend": {
-                      "value": 0.2857142857142857,
-                      "shap_value": 0.0,
-                      "effect": "negative"
+                      "value": 0.14285714285714285,
+                      "shap_value": 0.16904060471395496,
+                      "effect": "positive"
                     },
                     "pct_daytime": {
-                      "value": 0.42857142857142855,
-                      "shap_value": 0.0,
+                      "value": 0.8571428571428571,
+                      "shap_value": -1.702906182524166,
                       "effect": "negative"
                     },
                     "unique_called_ratio": {
@@ -174,13 +175,13 @@ if st.button("Run Fraud Check", key="run_check_button"):
                       "effect": "negative"
                     },
                     "POST_CODE": {
-                      "value": 493012.0,
-                      "shap_value": 0.0,
+                      "value": 879945.0,
+                      "shap_value": -0.16689157510933,
                       "effect": "negative"
                     },
                     "credit_score_cat": {
-                      "value": 2.0,
-                      "shap_value": 0.0,
+                      "value": 3.0,
+                      "shap_value": -0.03107703131856397,
                       "effect": "negative"
                     },
                     "short_call_ratio": {
@@ -189,7 +190,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                       "effect": "negative"
                     }
                   },
-                  "explanation": "The caller is labeled as 'Normal' because the pattern of calling behavior shows normal communication patterns with moderate call duration, a mix of weekend and weekday calls, and no suspicious patterns that would indicate fraudulent activity."
+                  "explanation": "Caller 917267973248 is labeled as an 'Anomaly' in the telecom fraud detection system due to having a high unique_called value of 7.0, which is unusual compared to normal calling patterns and may indicate suspicious behavior."
                 }
                   # Display prediction summary
                 st.subheader("📞 Prediction Summary")
