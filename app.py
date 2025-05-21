@@ -102,7 +102,7 @@ def run_notebook(phone_number):
     # notebook_output_state = result.get("state", {})
     # return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
     result = status_response.json()
-    st.info(f"result ==== {result}")
+    # st.info(f"result ==== {result}")
     notebook_output_state = result.get("state", {})
     result_state = notebook_output_state.get("result_state", "UNKNOWN")
     
@@ -114,11 +114,11 @@ def run_notebook(phone_number):
             f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
             headers=headers
         )
-        st.info(f"output_response ==== {output_response.json()}")
+        # st.info(f"output_response ==== {output_response.json()}")
         
         if output_response.status_code == 200:
             notebook_result = output_response.json().get("notebook_output", {})
-            st.info(f"output_response ==== {notebook_result}")
+            # st.info(f"output_response ==== {notebook_result}")
             # The result might be in result.data or result.result
             notebook_output = notebook_result.get("result", None)
             
