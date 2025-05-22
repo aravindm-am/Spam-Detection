@@ -39,97 +39,114 @@ if conn:
 else:
     st.stop()  # Do not continue if connection fails
 
-# Function to run the notebook as a one-time job
+# Function to run the notebook as a one-time job using an existing job
 def run_notebook(phone_number):
     headers = {
         "Authorization": f"Bearer {DATABRICKS_TOKEN}",
         "Content-Type": "application/json"
     }
 
-    # Cluster ID of your existing cluster
-    EXISTING_CLUSTER_ID = "0521-131856-gsh3b6se"
-
-    # Submit a new one-time job run
-    submit_payload = {
-        "run_name": f"FraudCheck_{phone_number}",
-        "notebook_task": {
-            "notebook_path": DATABRICKS_NOTEBOOK_PATH,
-            "base_parameters": {
-                "phone_number": phone_number
-            }
-        },
-        "existing_cluster_id": EXISTING_CLUSTER_ID        
-    }
-
-    response = requests.post(
-        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/submit",
-        headers=headers,
-        json=submit_payload
-    )
-
-    if response.status_code != 200:
-        st.error("❌ Failed to start Databricks job.")
-        st.text(response.text)
-        return None
-        
-    run_id = response.json()["run_id"]
+    # Use existing job ID instead of creating a new job
+    EXISTING_JOB_ID = "123213880128552"  # The fixed job ID to reuse
     
     # Create a status placeholder for the user-friendly message
     status_placeholder = st.empty()
-    # status_placeholder.info("🔍 Subex Spam Scoring Started in Databricks...")
+    status_placeholder.info("🔍 Subex Spam Scoring Started in Databricks...")
 
-    # Poll for status silently (without showing technical details)
-    while True:
-        status_response = requests.get(
-            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
-            headers=headers
+    try:
+        # First, update the job parameters
+        update_payload = {
+            "job_id": EXISTING_JOB_ID,
+            "new_settings": {
+                "notebook_task": {
+                    "notebook_path": DATABRICKS_NOTEBOOK_PATH,
+                    "base_parameters": {
+                        "phone_number": phone_number
+                    }
+                }
+            }
+        }
+
+        # Update the job parameters
+        update_response = requests.post(
+            f"{DATABRICKS_HOST}/api/2.1/jobs/update",
+            headers=headers,
+            json=update_payload
         )
         
-        # Get state but don't display technical messages
-        run_state = status_response.json()["state"]["life_cycle_state"]
-        
-        if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
-            break
-        time.sleep(1)
-      # Clear the status message when done
-    status_placeholder.empty()
-
-    # result = status_response.json()
-    # # Removed debug info messages
-
-
-    
-    # notebook_output_state = result.get("state", {})
-    # return notebook_output_state.get("result_state", "✅ Job completed, but no output was returned.")
-    result = status_response.json()
-    # st.info(f"result ==== {result}")
-    notebook_output_state = result.get("state", {})
-    result_state = notebook_output_state.get("result_state", "UNKNOWN")
-    
-    # Get notebook output if available
-    notebook_output = None
-    if result_state == "SUCCESS":
-        # Get notebook output from job result
-        output_response = requests.get(
-            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
-            headers=headers
-        )
-        # st.info(f"output_response ==== {output_response.json()}")
-        
-        if output_response.status_code == 200:
-            notebook_result = output_response.json().get("notebook_output", {})
-            # st.info(f"output_response ==== {notebook_result}")
-            # The result might be in result.data or result.result
-            notebook_output = notebook_result.get("result", None)
+        if update_response.status_code != 200:
+            st.error("❌ Failed to update job parameters.")
+            st.text(update_response.text)
+            status_placeholder.empty()
+            return None, None
             
-            # Try to parse the output as JSON if it's a string
-            if isinstance(notebook_output, str):
-                try:
-                    notebook_output = json.loads(notebook_output)
-                except:
-                    pass  # Keep as string if not valid JSON
-    
-    return result_state, notebook_output
+        # Now run the job with updated parameters
+        run_payload = {
+            "job_id": EXISTING_JOB_ID
+        }
+
+        response = requests.post(
+            f"{DATABRICKS_HOST}/api/2.1/jobs/run-now",
+            headers=headers,
+            json=run_payload
+        )
+
+        if response.status_code != 200:
+            st.error("❌ Failed to start Databricks job.")
+            st.text(response.text)
+            status_placeholder.empty()
+            return None, None
+            
+        run_id = response.json()["run_id"]
+        
+        # Poll for status silently (without showing technical details)
+        while True:
+            status_response = requests.get(
+                f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
+                headers=headers
+            )
+            
+            # Get state but don't display technical messages
+            run_state = status_response.json()["state"]["life_cycle_state"]
+            
+            if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
+                break
+                
+            time.sleep(1)
+        
+        # Get the final result
+        result = status_response.json()
+        notebook_output_state = result.get("state", {})
+        result_state = notebook_output_state.get("result_state", "UNKNOWN")
+        
+        # Get notebook output if available
+        notebook_output = None
+        if result_state == "SUCCESS":
+            # Get notebook output from job result
+            output_response = requests.get(
+                f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
+                headers=headers
+            )
+            
+            if output_response.status_code == 200:
+                notebook_result = output_response.json().get("notebook_output", {})
+                notebook_output = notebook_result.get("result", None)
+                
+                # Try to parse the output as JSON if it's a string
+                if isinstance(notebook_output, str):
+                    try:
+                        notebook_output = json.loads(notebook_output)
+                    except:
+                        pass  # Keep as string if not valid JSON
+        
+        return result_state, notebook_output
+        
+    except Exception as e:
+        st.error(f"❌ Error running job: {e}")
+        return None, None
+    finally:
+        # Always clear the status message when done
+        status_placeholder.empty()
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
