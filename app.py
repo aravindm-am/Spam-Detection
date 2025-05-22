@@ -133,7 +133,8 @@ phone_number = st.text_input("Enter Phone Number to Check")
 if st.button("Run Fraud Check", key="run_check_button"):
     if phone_number.strip():
         with st.spinner("Subex Spam Scoring started in Databricks..."):
-            result, notebook_output = run_notebook(phone_number.strip())
+            result = run_notebook(phone_number.strip())
+            notebook_output = run_notebook(phone_number.strip())
             
             if result == "SUCCESS" and notebook_output:
                 st.success("🎉 Analysis complete!")
