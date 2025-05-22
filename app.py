@@ -66,8 +66,7 @@ def run_notebook(phone_number):
         
     run_id = response.json()["run_id"]
     
-    # Status placeholder
-    status_placeholder = st.empty()
+    # Removed status placeholder to eliminate "Running run_notebook(...)" spinner
     
     # More efficient polling with increasing backoff
     backoff = 1
@@ -87,7 +86,7 @@ def run_notebook(phone_number):
         time.sleep(min(backoff, max_backoff))
         backoff *= 1.5
     
-    status_placeholder.empty()
+    # Removed status_placeholder.empty()
 
     result = status_response.json()
     notebook_output_state = result.get("state", {})
@@ -149,8 +148,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 
                 with col2:
                     st.markdown(f"**Anomaly Score**: `{notebook_output['anomaly_score']:.4f}`")
-                    st.markdown(f"**Processing Time**: `{notebook_output.get('time_taken_seconds', '?'):.2f}s`")
-                
+                                    
                 # Display the explanation if available
                 if 'explanation' in notebook_output and notebook_output['explanation']:
                     st.markdown(f"**AI Explanation**: {notebook_output['explanation']}")
