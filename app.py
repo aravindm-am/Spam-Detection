@@ -153,160 +153,200 @@ st.title("📞 Telecom Fraud Detection")
 
 phone_number = st.text_input("Enter Phone Number to Check")
 
-# if st.button("Run Fraud Check"):
-#     if phone_number.strip():
-#         with st.spinner("Subex Spam Scoring Started in Databricks..."):
-#             output = run_notebook(phone_number.strip())
-#             st.success("🎉 Job finished!")
-#             st.code(output)
-#     else:
-#         st.warning("Please enter a phone number.")
-
 if st.button("Run Fraud Check", key="run_check_button"):
     if phone_number.strip():
         with st.spinner("Subex Spam Scoring Started in Databricks..."):
             result, notebook_output = run_notebook(phone_number.strip())
+            
             if result == "SUCCESS":
-                st.success("🎉 Analysis complete!")                # Use the hardcoded JSON data for visualization
-                shap_data = {
-                  "base_value": 10.546970406720215,
-                  "prediction": "Anomaly",
-                  "anomaly_score": 0.012908768548510419,
-                  "feature_importance": {
-                    "mean_duration": 1.762012160930317,
-                    "pct_daytime": 1.702906182524166,
-                    "pct_weekend": 0.16904060471395496,
-                    "POST_CODE": 0.16689157510933,
-                    "credit_score_cat": 0.03107703131856397,
-                    "short_call_pct": 0.0,
-                    "unanswered_pct": 0.0,
-                    "unique_called": 0.0,
-                    "unique_called_ratio": 0.0,
-                    "short_call_count": 0.0,
-                    "short_call_ratio": 0.0
-                  },
-                  "feature_contributions": {
-                    "short_call_pct": {
-                      "value": 0.0,
-                      "shap_value": 0.0,
-                      "effect": "negative"
+                st.success("🎉 Analysis complete!")
+                
+                # Default data in case the API doesn't return proper data
+                default_shap_data = {
+                    "base_value": 10.546970406720215,
+                    "prediction": "Anomaly",
+                    "anomaly_score": 0.012908768548510419,
+                    "feature_importance": {
+                        "mean_duration": 1.762012160930317,
+                        "pct_daytime": 1.702906182524166,
+                        "pct_weekend": 0.16904060471395496,
+                        "POST_CODE": 0.16689157510933,
+                        "credit_score_cat": 0.03107703131856397,
+                        "short_call_pct": 0.0,
+                        "unanswered_pct": 0.0,
+                        "unique_called": 0.0,
+                        "unique_called_ratio": 0.0,
+                        "short_call_count": 0.0,
+                        "short_call_ratio": 0.0
                     },
-                    "unanswered_pct": {
-                      "value": 0.0,
-                      "shap_value": 0.0,
-                      "effect": "negative"
+                    "feature_contributions": {
+                        "short_call_pct": {
+                            "value": 0.0,
+                            "shap_value": 0.0,
+                            "effect": "negative"
+                        },
+                        "unanswered_pct": {
+                            "value": 0.0,
+                            "shap_value": 0.0,
+                            "effect": "negative"
+                        },
+                        "unique_called": {
+                            "value": 7.0,
+                            "shap_value": 0.0,
+                            "effect": "negative"
+                        },
+                        "mean_duration": {
+                            "value": 268.85714285714283,
+                            "shap_value": -1.762012160930317,
+                            "effect": "negative"
+                        },
+                        "pct_weekend": {
+                            "value": 0.14285714285714285,
+                            "shap_value": 0.16904060471395496,
+                            "effect": "positive"
+                        },
+                        "pct_daytime": {
+                            "value": 0.8571428571428571,
+                            "shap_value": -1.702906182524166,
+                            "effect": "negative"
+                        },
+                        "unique_called_ratio": {
+                            "value": 1.0,
+                            "shap_value": 0.0,
+                            "effect": "negative"
+                        },
+                        "short_call_count": {
+                            "value": 0.0,
+                            "shap_value": 0.0,
+                            "effect": "negative"
+                        },
+                        "POST_CODE": {
+                            "value": 879945.0,
+                            "shap_value": -0.16689157510933,
+                            "effect": "negative"
+                        },
+                        "credit_score_cat": {
+                            "value": 3.0,
+                            "shap_value": -0.03107703131856397,
+                            "effect": "negative"
+                        },
+                        "short_call_ratio": {
+                            "value": 0.0,
+                            "shap_value": 0.0,
+                            "effect": "negative"
+                        }
                     },
-                    "unique_called": {
-                      "value": 7.0,
-                      "shap_value": 0.0,
-                      "effect": "negative"
-                    },
-                    "mean_duration": {
-                      "value": 268.85714285714283,
-                      "shap_value": -1.762012160930317,
-                      "effect": "negative"
-                    },
-                    "pct_weekend": {
-                      "value": 0.14285714285714285,
-                      "shap_value": 0.16904060471395496,
-                      "effect": "positive"
-                    },
-                    "pct_daytime": {
-                      "value": 0.8571428571428571,
-                      "shap_value": -1.702906182524166,
-                      "effect": "negative"
-                    },
-                    "unique_called_ratio": {
-                      "value": 1.0,
-                      "shap_value": 0.0,
-                      "effect": "negative"
-                    },
-                    "short_call_count": {
-                      "value": 0.0,
-                      "shap_value": 0.0,
-                      "effect": "negative"
-                    },
-                    "POST_CODE": {
-                      "value": 879945.0,
-                      "shap_value": -0.16689157510933,
-                      "effect": "negative"
-                    },
-                    "credit_score_cat": {
-                      "value": 3.0,
-                      "shap_value": -0.03107703131856397,
-                      "effect": "negative"
-                    },
-                    "short_call_ratio": {
-                      "value": 0.0,
-                      "shap_value": 0.0,
-                      "effect": "negative"
-                    }
-                  },
-                  "explanation": "Caller 917267973248 is labeled as an 'Anomaly' in the telecom fraud detection system due to having a high unique_called value of 7.0, which is unusual compared to normal calling patterns and may indicate suspicious behavior."
+                    "explanation": "Caller 917267973248 is labeled as an 'Anomaly' in the telecom fraud detection system due to having a high unique_called value of 7.0, which is unusual compared to normal calling patterns and may indicate suspicious behavior."
                 }
-                shap_data = notebook_output
-                  # Display prediction summary
-                st.subheader("📞 Prediction Summary")
-                st.markdown(f"**Phone Number**: `{phone_number}`")
-                st.markdown(f"**Prediction**: `{shap_data['prediction']}`")
-                st.markdown(f"**Anomaly Score**: `{shap_data['anomaly_score']:.4f}`")
                 
-                # Display the explanation if available
-                if 'explanation' in shap_data and shap_data['explanation']:
-                    st.markdown(f"**AI Explanation**: {shap_data['explanation']}")
+                # Use notebook output if available, otherwise use default
+                # Enhanced error handling for notebook_output parsing
+                try:
+                    # If notebook_output is a string, try to parse it as JSON
+                    if isinstance(notebook_output, str):
+                        try:
+                            notebook_output = json.loads(notebook_output)
+                        except json.JSONDecodeError:
+                            st.warning("⚠️ Could not parse notebook output as JSON. Using default data.")
+                            notebook_output = {}
+                    
+                    # Check if notebook_output has the required structure
+                    if isinstance(notebook_output, dict) and all(key in notebook_output for key in ['prediction', 'anomaly_score', 'feature_importance', 'feature_contributions']):
+                        shap_data = notebook_output
+                    else:
+                        st.warning("⚠️ Received incomplete data from the analysis. Using default visualization data.")
+                        shap_data = default_shap_data
+                        if notebook_output:
+                            with st.expander("Debug Info"):
+                                st.write(f"Received data structure: {type(notebook_output)}")
+                                if isinstance(notebook_output, dict):
+                                    st.write(f"Available keys: {list(notebook_output.keys())}")
                 
-                # Create and display Feature Importance plot
-                st.subheader("📊 SHAP Feature Importance")
-                
-                # Convert feature importance to DataFrame for plotting
-                feature_importance_df = pd.DataFrame({
-                    'Feature': list(shap_data['feature_importance'].keys()),
-                    'Importance': list(shap_data['feature_importance'].values())
-                }).sort_values('Importance', ascending=False)
-                
-                # Create bar chart with Plotly
-                fig_importance = px.bar(
-                    feature_importance_df, 
-                    x='Importance', 
-                    y='Feature', 
-                    orientation='h',
-                    title='Feature Importance',
-                    color='Importance',
-                    color_continuous_scale='Blues'
-                )
-                st.plotly_chart(fig_importance)
-                
-                # Create and display Waterfall Plot
-                st.subheader("🔍 SHAP Waterfall Plot")
-                
-                # Extract waterfall data
-                waterfall_data = shap_data['feature_contributions']
-                features = list(waterfall_data.keys())
-                shap_values = [waterfall_data[f]['shap_value'] for f in features]
-                
-                # Create waterfall chart with Plotly
-                fig_waterfall = go.Figure(go.Waterfall(
-                    name="SHAP Values", 
-                    orientation="h",
-                    y=features,
-                    x=shap_values,
-                    connector={"line":{"color":"rgb(63, 63, 63)"}},
-                    decreasing={"marker":{"color":"#FF4B4B"}},
-                    increasing={"marker":{"color":"#007BFF"}},
-                    base=shap_data['base_value']
-                ))
-                
-                fig_waterfall.update_layout(
-                    title="SHAP Waterfall Plot",
-                    xaxis_title="SHAP Value",
-                    yaxis_title="Feature",
-                    showlegend=False
-                )
-                st.plotly_chart(fig_waterfall)
+                    # Add timing measurement for performance monitoring
+                    start_time = time.time()
+                    
+                    # Display prediction summary
+                    st.subheader("📞 Prediction Summary")
+                    st.markdown(f"**Phone Number**: `{phone_number}`")
+                    
+                    st.markdown(f"**Prediction**: `{shap_data['prediction']}`")
+                    st.markdown(f"**Anomaly Score**: `{shap_data['anomaly_score']:.4f}`")
+                    
+                    # Display the explanation if available
+                    if 'explanation' in shap_data and shap_data['explanation']:
+                        st.markdown(f"**AI Explanation**: {shap_data['explanation']}")
+                    
+                    # Create and display Feature Importance plot
+                    st.subheader("📊 SHAP Feature Importance")
+                    
+                    # Convert feature importance to DataFrame for plotting
+                    feature_importance_df = pd.DataFrame({
+                        'Feature': list(shap_data['feature_importance'].keys()),
+                        'Importance': list(shap_data['feature_importance'].values())
+                    }).sort_values('Importance', ascending=False)
+                    
+                    # Create bar chart with Plotly
+                    fig_importance = px.bar(
+                        feature_importance_df, 
+                        x='Importance', 
+                        y='Feature', 
+                        orientation='h',
+                        title='Feature Importance',
+                        color='Importance',
+                        color_continuous_scale='Blues'
+                    )
+                    st.plotly_chart(fig_importance)
+                    
+                    # Create and display Waterfall Plot
+                    st.subheader("🔍 SHAP Waterfall Plot")
+                    
+                    # Extract waterfall data safely
+                    waterfall_data = shap_data.get('feature_contributions', {})
+                    if waterfall_data:
+                        features = list(waterfall_data.keys())
+                        shap_values = []
+                        for feature in features:
+                            # Safe access to nested dictionary
+                            feat_data = waterfall_data.get(feature, {})
+                            shap_val = feat_data.get('shap_value', 0)
+                            shap_values.append(shap_val)
+                        
+                        # Create waterfall chart with Plotly
+                        fig_waterfall = go.Figure(go.Waterfall(
+                            name="SHAP Values", 
+                            orientation="h",
+                            y=features,
+                            x=shap_values,
+                            connector={"line":{"color":"rgb(63, 63, 63)"}},
+                            decreasing={"marker":{"color":"#FF4B4B"}},
+                            increasing={"marker":{"color":"#007BFF"}},
+                            base=shap_data.get('base_value', 0)
+                        ))
+                        
+                        fig_waterfall.update_layout(
+                            title="SHAP Waterfall Plot",
+                            xaxis_title="SHAP Value",
+                            yaxis_title="Feature",
+                            showlegend=False
+                        )
+                        st.plotly_chart(fig_waterfall)
+                    else:
+                        st.warning("⚠️ Could not generate waterfall plot due to missing feature contribution data")
+                        
+                    # Show processing time for performance monitoring
+                    time_taken = time.time() - start_time
+                    st.info(f"⏱️ Visualization processing time: {time_taken:.2f} seconds")
+                    
+                except KeyError as ke:
+                    st.error(f"❌ Missing key in data: {ke}")
+                    st.warning("Using default visualization instead.")
+                    # Display default visualization here if needed
+                except Exception as ex:
+                    st.error(f"❌ Error displaying results: {ex}")
+                    import traceback
+                    st.expander("Error details").code(traceback.format_exc())
             else:
-                st.error(f"❌ Job failed: {result}")
+                st.error(f"❌ Job failed or returned no data. Status: {result}")
     else:
         st.warning("📱 Please enter a valid phone number.")
-
-
- 
+EOL
