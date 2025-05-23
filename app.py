@@ -210,21 +210,29 @@ if st.button("Run Fraud Check", key="run_check_button"):
                             base=notebook_output['base_value']
                         ))
                         fig_waterfall.update_layout(get_plotly_layout("SHAP Waterfall Plot"))
-                        st.plotly_chart(fig_waterfall, use_container_width=True)
-                  # Display Combined Analysis section with data from JSON                if 'combined_analysis' in notebook_output and notebook_output['combined_analysis']['status'] == 'success':
-                    combined_data = notebook_output['combined_analysis']
-                    # Define viz_data from the visualizations in combined_data
-                    viz_data = combined_data.get('visualizations', {})
-                    
-                    with main_tabs[1]:
-                        # Create metrics row
+                        st.plotly_chart(fig_waterfall, use_container_width=True)                    # Display Combined Analysis section with data from JSON
+                    if 'combined_analysis' in notebook_output and notebook_output['combined_analysis']['status'] == 'success':
+                        combined_data = notebook_output['combined_analysis']
+                        # Define viz_data from the visualizations in combined_data
+                        viz_data = combined_data.get('visualizations', {})
+                        
+                        with main_tabs[1]:
+                        # Create metrics row with error handling for missing keys
                         col1, col2, col3 = st.columns(3)
                         with col1:
-                            st.metric("Total Records", combined_data['total_records'])
+                            st.metric("Total Records", combined_data.get('total_records', 'N/A'))
                         with col2:
-                            st.metric("Anomalies", f"{combined_data['anomaly_count']} ({combined_data['anomaly_percentage']:.1f}%)")
+                            anomaly_count = combined_data.get('anomaly_count', 'N/A')
+                            anomaly_percentage = combined_data.get('anomaly_percentage', 0)
+                            
+                            if anomaly_count != 'N/A' and isinstance(anomaly_percentage, (int, float)):
+                                metric_value = f"{anomaly_count} ({anomaly_percentage:.1f}%)"
+                            else:
+                                metric_value = 'N/A'
+                                
+                            st.metric("Anomalies", metric_value)
                         with col3:
-                            st.metric("Normal Records", combined_data['normal_count'])
+                            st.metric("Normal Records", combined_data.get('normal_count', 'N/A'))
                     
                     # Create tabs for different visualizations from JSON data
                     with main_tabs[1]:
@@ -341,46 +349,54 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                         showarrow=True,
                                         arrowhead=1
                                     )
-                                
-                                fig.update_layout(get_plotly_layout("Distribution of Anomaly Scores"))
+                                  fig.update_layout(get_plotly_layout("Distribution of Anomaly Scores"))
                                 st.plotly_chart(fig, use_container_width=True)
                                 
-                                # Display percentile information
-                                if 'anomaly_metrics' in combined_data:
+                                # Display percentile information with error handling
+                                if 'anomaly_metrics' in combined_data and 'anomaly_score_percentiles' in combined_data.get('anomaly_metrics', {}):
                                     metrics = combined_data['anomaly_metrics']
+                                    percentiles = metrics.get('anomaly_score_percentiles', {})
                                     
                                     st.subheader("Anomaly Score Percentiles")
                                     percentiles_df = pd.DataFrame({
                                         'Percentile': ['25th', '50th (Median)', '75th', '90th', '99th'],
                                         'Score': [
-                                            metrics['anomaly_score_percentiles']['25th'], 
-                                            metrics['anomaly_score_percentiles']['50th'],
-                                            metrics['anomaly_score_percentiles']['75th'],
-                                            metrics['anomaly_score_percentiles']['90th'],
-                                            metrics['anomaly_score_percentiles']['99th']
+                                            percentiles.get('25th', 'N/A'), 
+                                            percentiles.get('50th', 'N/A'),
+                                            percentiles.get('75th', 'N/A'),
+                                            percentiles.get('90th', 'N/A'),
+                                            percentiles.get('99th', 'N/A')
                                         ]
                                     })
                                     st.table(percentiles_df)
-                                    
-                                    # Show where this phone number's score falls in the distribution
-                                    if 'anomaly_score' in notebook_output:
-                                        current_score = notebook_output['anomaly_score']
-                                        percentile_position = None
-                                        
-                                        if current_score <= metrics['anomaly_score_percentiles']['25th']:
-                                            percentile_position = "below the 25th percentile"
-                                        elif current_score <= metrics['anomaly_score_percentiles']['50th']:
-                                            percentile_position = "between the 25th and 50th percentiles"
-                                        elif current_score <= metrics['anomaly_score_percentiles']['75th']:
-                                            percentile_position = "between the 50th and 75th percentiles"
-                                        elif current_score <= metrics['anomaly_score_percentiles']['90th']:
-                                            percentile_position = "between the 75th and 90th percentiles"
-                                        elif current_score <= metrics['anomaly_score_percentiles']['99th']:
-                                            percentile_position = "between the 90th and 99th percentiles"
-                                        else:
-                                            percentile_position = "above the 99th percentile"
-                                        
-                                        st.markdown(f"This phone number's anomaly score of **{current_score:.4f}** falls {percentile_position} of all scores.")
+                                      # Show where this phone number's score falls in the distribution
+                                    if 'anomaly_score' in notebook_output and 'anomaly_metrics' in combined_data and 'anomaly_score_percentiles' in combined_data.get('anomaly_metrics', {}):
+                                        try:
+                                            current_score = notebook_output['anomaly_score']
+                                            percentiles = metrics.get('anomaly_score_percentiles', {})
+                                            percentile_position = None
+                                            
+                                            if isinstance(current_score, (int, float)) and all(isinstance(p, (int, float)) for p in [
+                                                percentiles.get('25th'), percentiles.get('50th'), 
+                                                percentiles.get('75th'), percentiles.get('90th'), 
+                                                percentiles.get('99th')]):
+                                                
+                                                if current_score <= percentiles.get('25th'):
+                                                    percentile_position = "below the 25th percentile"
+                                                elif current_score <= percentiles.get('50th'):
+                                                    percentile_position = "between the 25th and 50th percentiles"
+                                                elif current_score <= percentiles.get('75th'):
+                                                    percentile_position = "between the 50th and 75th percentiles"
+                                                elif current_score <= percentiles.get('90th'):
+                                                    percentile_position = "between the 75th and 90th percentiles"
+                                                elif current_score <= percentiles.get('99th'):
+                                                    percentile_position = "between the 90th and 99th percentiles"
+                                                else:
+                                                    percentile_position = "above the 99th percentile"
+                                                
+                                                st.markdown(f"This phone number's anomaly score of **{current_score:.4f}** falls {percentile_position} of all scores.")
+                                        except (TypeError, ValueError) as e:
+                                            st.warning("Could not determine percentile position due to data type issues.")
                             else:
                                 st.warning("Anomaly distribution data not found in the response.")
                         
@@ -399,16 +415,17 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                     color_continuous_scale='RdBu_r',  # Blue (positive) to Red (negative)
                                     zmin=-1, zmax=1,  # Correlation range
                                 )
-                                
-                                fig.update_layout(
+                                  fig.update_layout(
                                     height=600,
                                     xaxis=dict(side="bottom"),
                                     title="Feature Correlation Matrix"
                                 )
+                                
                                 st.plotly_chart(fig, use_container_width=True)
-                                st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")
-                            else:
-                                st.warning("Correlation matrix data not found in the response.")                    
+                                st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")                            else:
+                                st.warning("Correlation matrix data not found in the response.")
+                        else:
+                            st.warning("Visualization data not found in the response. The backend may be using an older version.")
                 
             elif "error" in notebook_output:
                 st.error(f"❌ Error: {notebook_output['error']}")
