@@ -211,9 +211,10 @@ if st.button("Run Fraud Check", key="run_check_button"):
                         ))
                         fig_waterfall.update_layout(get_plotly_layout("SHAP Waterfall Plot"))
                         st.plotly_chart(fig_waterfall, use_container_width=True)
-                  # Display Combined Analysis section with data from JSON
-                if 'combined_analysis' in notebook_output and notebook_output['combined_analysis']['status'] == 'success':
+                  # Display Combined Analysis section with data from JSON                if 'combined_analysis' in notebook_output and notebook_output['combined_analysis']['status'] == 'success':
                     combined_data = notebook_output['combined_analysis']
+                    # Define viz_data from the visualizations in combined_data
+                    viz_data = combined_data.get('visualizations', {})
                     
                     with main_tabs[1]:
                         # Create metrics row
@@ -406,8 +407,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                 )
                                 
                                 st.plotly_chart(fig, use_container_width=True)
-                                st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")
-                            else:
+                                st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")                            else:
                                 st.warning("Correlation matrix data not found in the response.")
                     else:
                         st.warning("Visualization data not found in the response. The backend may be using an older version.")
