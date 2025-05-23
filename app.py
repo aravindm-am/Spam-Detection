@@ -217,8 +217,9 @@ if st.button("Run Fraud Check", key="run_check_button"):
                         viz_data = combined_data.get('visualizations', {})
                         
                         with main_tabs[1]:
+                            
                         # Create metrics row with error handling for missing keys
-                        col1, col2, col3 = st.columns(3)
+                            col1, col2, col3 = st.columns(3)
                         with col1:
                             st.metric("Total Records", combined_data.get('total_records', 'N/A'))
                         with col2:
