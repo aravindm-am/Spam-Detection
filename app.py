@@ -408,9 +408,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                 st.plotly_chart(fig, use_container_width=True)
                                 st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")
                             else:
-                                st.warning("Correlation matrix data not found in the response.")
-                    else:
-                        st.warning("Visualization data not found in the response. The backend may be using an older version.")
+                                st.warning("Correlation matrix data not found in the response.")                    
                 
             elif "error" in notebook_output:
                 st.error(f"❌ Error: {notebook_output['error']}")
