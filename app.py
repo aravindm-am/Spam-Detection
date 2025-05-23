@@ -350,7 +350,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                         showarrow=True,
                                         arrowhead=1
                                     )
-                                  fig.update_layout(get_plotly_layout("Distribution of Anomaly Scores"))
+                                fig.update_layout(get_plotly_layout("Distribution of Anomaly Scores"))
                                 st.plotly_chart(fig, use_container_width=True)
                                 
                                 # Display percentile information with error handling
