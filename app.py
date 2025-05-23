@@ -416,7 +416,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                     color_continuous_scale='RdBu_r',  # Blue (positive) to Red (negative)
                                     zmin=-1, zmax=1,  # Correlation range
                                 )
-                                  fig.update_layout(
+                                fig.update_layout(
                                     height=600,
                                     xaxis=dict(side="bottom"),
                                     title="Feature Correlation Matrix"
