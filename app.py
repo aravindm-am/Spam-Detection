@@ -405,7 +405,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                     xaxis=dict(side="bottom"),
                                     title="Feature Correlation Matrix"
                                 )
-                                  st.plotly_chart(fig, use_container_width=True)
+                                st.plotly_chart(fig, use_container_width=True)
                                 st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")
                             else:
                                 st.warning("Correlation matrix data not found in the response.")
