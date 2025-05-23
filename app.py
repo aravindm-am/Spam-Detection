@@ -166,74 +166,73 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 # Display the explanation if available
                 if 'explanation' in notebook_output and notebook_output['explanation']:
                     st.markdown(f"**AI Explanation**: {notebook_output['explanation']}")
+                  # Create main tabs for Individual vs Combined Analysis
+                main_tabs = st.tabs(["📱 Individual Analysis", "🌐 Combined Dataset Analysis"])
                 
-                # Tabs for different visualizations
-                tab1, tab2 = st.tabs(["Feature Importance", "SHAP Waterfall"])
-                
-                with tab1:
-                    # Convert feature importance to DataFrame for plotting
-                    feature_importance_df = pd.DataFrame({
-                        'Feature': list(notebook_output['feature_importance'].keys()),
-                        'Importance': list(notebook_output['feature_importance'].values())
-                    }).sort_values('Importance', ascending=False)
+                with main_tabs[0]:
+                    # Sub-tabs for individual phone analysis
+                    indiv_tabs = st.tabs(["Feature Importance", "SHAP Waterfall"])
                     
-                    # Create bar chart with Plotly
-                    fig_importance = px.bar(
-                        feature_importance_df, 
-                        x='Importance', 
-                        y='Feature', 
-                        orientation='h',
-                        color='Importance',
-                        color_continuous_scale='Blues'
-                    )
-                    fig_importance.update_layout(get_plotly_layout("Feature Importance"))
-                    st.plotly_chart(fig_importance, use_container_width=True)
-                
-                with tab2:
-                    # Extract waterfall data
-                    waterfall_data = notebook_output['feature_contributions']
-                    features = list(waterfall_data.keys())
-                    shap_values = [waterfall_data[f]['shap_value'] for f in features]
+                    with indiv_tabs[0]:
+                        # Convert feature importance to DataFrame for plotting
+                        feature_importance_df = pd.DataFrame({
+                            'Feature': list(notebook_output['feature_importance'].keys()),
+                            'Importance': list(notebook_output['feature_importance'].values())
+                        }).sort_values('Importance', ascending=False)
+                        
+                        # Create bar chart with Plotly
+                        fig_importance = px.bar(
+                            feature_importance_df, 
+                            x='Importance', 
+                            y='Feature', 
+                            orientation='h',
+                            color='Importance',
+                            color_continuous_scale='Blues'
+                        )
+                        fig_importance.update_layout(get_plotly_layout("Feature Importance"))
+                        st.plotly_chart(fig_importance, use_container_width=True)
                     
-                    # Create waterfall chart with Plotly
-                    fig_waterfall = go.Figure(go.Waterfall(
-                        name="SHAP Values", 
-                        orientation="h",
-                        y=features,
-                        x=shap_values,
-                        connector={"line":{"color":"rgb(63, 63, 63)"}},
-                        decreasing={"marker":{"color":"#FF4B4B"}},
-                        increasing={"marker":{"color":"#007BFF"}},
-                        base=notebook_output['base_value']
-                    ))
-                      fig_waterfall.update_layout(get_plotly_layout("SHAP Waterfall Plot"))
-                    st.plotly_chart(fig_waterfall, use_container_width=True)
-                
-                # Display Combined Analysis section with data from JSON
+                    with indiv_tabs[1]:
+                        # Extract waterfall data
+                        waterfall_data = notebook_output['feature_contributions']
+                        features = list(waterfall_data.keys())
+                        shap_values = [waterfall_data[f]['shap_value'] for f in features]
+                        
+                        # Create waterfall chart with Plotly
+                        fig_waterfall = go.Figure(go.Waterfall(
+                            name="SHAP Values", 
+                            orientation="h",
+                            y=features,
+                            x=shap_values,
+                            connector={"line":{"color":"rgb(63, 63, 63)"}},
+                            decreasing={"marker":{"color":"#FF4B4B"}},
+                            increasing={"marker":{"color":"#007BFF"}},
+                            base=notebook_output['base_value']
+                        ))
+                        fig_waterfall.update_layout(get_plotly_layout("SHAP Waterfall Plot"))
+                        st.plotly_chart(fig_waterfall, use_container_width=True)
+                  # Display Combined Analysis section with data from JSON
                 if 'combined_analysis' in notebook_output and notebook_output['combined_analysis']['status'] == 'success':
                     combined_data = notebook_output['combined_analysis']
                     
-                    st.markdown("---")
-                    st.header("🌐 Combined Dataset Analysis")
-                    
-                    # Create metrics row
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("Total Records", combined_data['total_records'])
-                    with col2:
-                        st.metric("Anomalies", f"{combined_data['anomaly_count']} ({combined_data['anomaly_percentage']:.1f}%)")
-                    with col3:
-                        st.metric("Normal Records", combined_data['normal_count'])
+                    with main_tabs[1]:
+                        # Create metrics row
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Total Records", combined_data['total_records'])
+                        with col2:
+                            st.metric("Anomalies", f"{combined_data['anomaly_count']} ({combined_data['anomaly_percentage']:.1f}%)")
+                        with col3:
+                            st.metric("Normal Records", combined_data['normal_count'])
                     
                     # Create tabs for different visualizations from JSON data
+                    combined_tabs = st.tabs(["Feature Importance", "Feature Impact", "Anomaly Distribution", "Correlation Heatmap"])
+                      # Create tabs for different visualizations from JSON data
                     combined_tabs = st.tabs(["Feature Importance", "Feature Impact", "Anomaly Distribution", "Correlation Heatmap"])
                     
                     # Check if 'visualizations' key exists in the data
                     if 'visualizations' in combined_data:
-                        viz_data = combined_data['visualizations']
-                        
-                        with combined_tabs[0]:
-                            st.subheader("Combined Feature Importance")
+                        viz_data = combined_data['visualizations']nce")
                             st.markdown("This chart shows the most important features across all records in the dataset.")
                             
                             # Create feature importance plot using Plotly from JSON data
