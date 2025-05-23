@@ -166,7 +166,8 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 # Display the explanation if available
                 if 'explanation' in notebook_output and notebook_output['explanation']:
                     st.markdown(f"**AI Explanation**: {notebook_output['explanation']}")
-                  # Create main tabs for Individual vs Combined Analysis
+                
+                # Create main tabs for Individual vs Combined Analysis
                 main_tabs = st.tabs(["📱 Individual Analysis", "🌐 Combined Dataset Analysis"])
                 
                 with main_tabs[0]:
@@ -210,16 +211,17 @@ if st.button("Run Fraud Check", key="run_check_button"):
                             base=notebook_output['base_value']
                         ))
                         fig_waterfall.update_layout(get_plotly_layout("SHAP Waterfall Plot"))
-                        st.plotly_chart(fig_waterfall, use_container_width=True)                    # Display Combined Analysis section with data from JSON
-                    if 'combined_analysis' in notebook_output and notebook_output['combined_analysis']['status'] == 'success':
-                        combined_data = notebook_output['combined_analysis']
-                        # Define viz_data from the visualizations in combined_data
-                        viz_data = combined_data.get('visualizations', {})
-                        
-                        with main_tabs[1]:
-                            
+                        st.plotly_chart(fig_waterfall, use_container_width=True)
+                
+                # Display Combined Analysis section with data from JSON
+                if 'combined_analysis' in notebook_output and notebook_output['combined_analysis']['status'] == 'success':
+                    combined_data = notebook_output['combined_analysis']
+                    # Define viz_data from the visualizations in combined_data
+                    viz_data = combined_data.get('visualizations', {})
+                    
+                    with main_tabs[1]:
                         # Create metrics row with error handling for missing keys
-                            col1, col2, col3 = st.columns(3)
+                        col1, col2, col3 = st.columns(3)
                         with col1:
                             st.metric("Total Records", combined_data.get('total_records', 'N/A'))
                         with col2:
@@ -234,12 +236,11 @@ if st.button("Run Fraud Check", key="run_check_button"):
                             st.metric("Anomalies", metric_value)
                         with col3:
                             st.metric("Normal Records", combined_data.get('normal_count', 'N/A'))
-                    
-                    # Create tabs for different visualizations from JSON data
-                    with main_tabs[1]:
-                        combined_tabs = st.tabs(["Feature Importance", "Feature Impact", "Anomaly Distribution", "Correlation Heatmap"])
-                        # This section contains the combined dataset analysis
                         
+                        # Create tabs for different visualizations from JSON data
+                        combined_tabs = st.tabs(["Feature Importance", "Feature Impact", "Anomaly Distribution", "Correlation Heatmap"])
+                        
+                        # This section contains the combined dataset analysis
                         with combined_tabs[0]:
                             st.subheader("Combined Feature Importance")
                             st.markdown("This chart shows the most important features across all records in the dataset.")
@@ -350,6 +351,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                         showarrow=True,
                                         arrowhead=1
                                     )
+                                
                                 fig.update_layout(get_plotly_layout("Distribution of Anomaly Scores"))
                                 st.plotly_chart(fig, use_container_width=True)
                                 
@@ -370,7 +372,8 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                         ]
                                     })
                                     st.table(percentiles_df)
-                                      # Show where this phone number's score falls in the distribution
+                                    
+                                    # Show where this phone number's score falls in the distribution
                                     if 'anomaly_score' in notebook_output and 'anomaly_metrics' in combined_data and 'anomaly_score_percentiles' in combined_data.get('anomaly_metrics', {}):
                                         try:
                                             current_score = notebook_output['anomaly_score']
@@ -416,18 +419,20 @@ if st.button("Run Fraud Check", key="run_check_button"):
                                     color_continuous_scale='RdBu_r',  # Blue (positive) to Red (negative)
                                     zmin=-1, zmax=1,  # Correlation range
                                 )
+                                
                                 fig.update_layout(
                                     height=600,
                                     xaxis=dict(side="bottom"),
                                     title="Feature Correlation Matrix"
                                 )
                                 
-                            st.plotly_chart(fig, use_container_width=True)
-                            st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")                            else:
-                            st.warning("Correlation matrix data not found in the response.")
-                        else:
-                            st.warning("Visualization data not found in the response. The backend may be using an older version.")
-                
+                                st.plotly_chart(fig, use_container_width=True)
+                                st.markdown("Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.")
+                            else:
+                                st.warning("Correlation matrix data not found in the response.")
+                else:
+                    st.warning("Visualization data not found in the response. The backend may be using an older version.")
+            
             elif "error" in notebook_output:
                 st.error(f"❌ Error: {notebook_output['error']}")
             else:
