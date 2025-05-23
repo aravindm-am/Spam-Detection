@@ -226,11 +226,13 @@ if st.button("Run Fraud Check", key="run_check_button"):
                             st.metric("Normal Records", combined_data['normal_count'])
                     
                     # Create tabs for different visualizations from JSON data
-                    combined_tabs = st.tabs(["Feature Importance", "Feature Impact", "Anomaly Distribution", "Correlation Heatmap"])                    with main_tabs[1]:                    # This section was removed - we're using the combined_tabs within main_tabs[1] instead
-                            
-                            with combined_tabs[0]:
-                                st.subheader("Combined Feature Importance")
-                                st.markdown("This chart shows the most important features across all records in the dataset.")
+                    with main_tabs[1]:
+                        combined_tabs = st.tabs(["Feature Importance", "Feature Impact", "Anomaly Distribution", "Correlation Heatmap"])
+                        # This section contains the combined dataset analysis
+                        
+                        with combined_tabs[0]:
+                            st.subheader("Combined Feature Importance")
+                            st.markdown("This chart shows the most important features across all records in the dataset.")
                             
                             # Create feature importance plot using Plotly from JSON data
                             if 'feature_importance' in viz_data:
