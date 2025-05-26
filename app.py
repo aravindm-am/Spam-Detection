@@ -294,7 +294,7 @@ with analysis_tab2:
         
         if 'correlation_matrix' in combined:
             corr_df = pd.DataFrame.from_dict(combined['correlation_matrix'])
-              fig_corr = px.imshow(
+            fig_corr = px.imshow(
                 corr_df,
                 color_continuous_scale='RdBu_r',
                 zmin=-1, 
