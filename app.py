@@ -242,10 +242,10 @@ with analysis_tab2:
             st.plotly_chart(fig_global_importance, use_container_width=True)
         else:
             st.warning("Global feature importance data not available.")
-        
-        # 2. Feature Distribution by Prediction
+          # 2. Feature Distribution by Prediction
         st.markdown("### 📈 Feature Distribution: Normal vs Anomaly")
-        st.markdown("Compare how feature values differ between normal and anomalous calls.")        if 'feature_distributions' in combined:
+        st.markdown("Compare how feature values differ between normal and anomalous calls.")
+        if 'feature_distributions' in combined:
             select_feature = st.selectbox(
                 "Select feature to analyze:", 
                 options=list(combined['feature_distributions'].keys())
@@ -357,16 +357,15 @@ with analysis_tab2:
                 hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
                 text=bin_labels
             ))
-            
-            fig_hist.update_layout(
+              fig_hist.update_layout(
                 title='Anomaly Score Distribution',
                 xaxis_title='Anomaly Score',
                 yaxis_title='Count',
                 barmode='group'
-            ))
-            st.plotly_chart(fig_hist, use_container_width=True)
-    else:
+            )
+            st.plotly_chart(fig_hist, use_container_width=True)    else:
         st.info("Combined analysis data is not available for this result.")
+                
                 else:
                     st.error(f"❌ Job failed: {result}")
         else:
