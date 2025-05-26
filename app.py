@@ -229,7 +229,7 @@ with analysis_tab2:
                 'Feature': list(combined['global_feature_importance'].keys()),
                 'Importance': list(combined['global_feature_importance'].values())
             }).sort_values('Importance', ascending=False)
-              fig_global_importance = px.bar(
+            fig_global_importance = px.bar(
                 global_importance_df, 
                 x='Importance', 
                 y='Feature', 
