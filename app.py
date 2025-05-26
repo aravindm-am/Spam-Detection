@@ -355,17 +355,19 @@ with analysis_tab2:
                 name='Anomaly',
                 marker_color='#FF4B4B',
                 hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
-                text=bin_labels
-            ))
-              fig_hist.update_layout(
+                text=bin_labels            ))
+            
+            fig_hist.update_layout(
                 title='Anomaly Score Distribution',
                 xaxis_title='Anomaly Score',
                 yaxis_title='Count',
                 barmode='group'
             )
-            st.plotly_chart(fig_hist, use_container_width=True)    else:
+            st.plotly_chart(fig_hist, use_container_width=True)
+        else:
+            st.warning("Anomaly score distribution data not available.")    else:
         st.info("Combined analysis data is not available for this result.")
-                
+
                 else:
                     st.error(f"❌ Job failed: {result}")
         else:
