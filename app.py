@@ -348,8 +348,7 @@ with analysis_tab2:
                 hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
                 text=bin_labels
             ))
-            
-            fig_hist.add_trace(go.Bar(
+              fig_hist.add_trace(go.Bar(
                 x=bin_centers,
                 y=hist_data['anomaly_counts'],
                 name='Anomaly',
@@ -357,7 +356,8 @@ with analysis_tab2:
                 hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
                 text=bin_labels
             ))
-              fig_hist.update_layout(
+            
+            fig_hist.update_layout(
                 title='Anomaly Score Distribution',
                 xaxis_title='Anomaly Score',
                 yaxis_title='Count',
