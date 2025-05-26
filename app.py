@@ -239,7 +239,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 # Create main tabs for different analysis views
                 analysis_tab1, analysis_tab2 = st.tabs(["🔎 Individual Analysis", "📈 Combined Analysis"])
                 
-                # Prepare data for visualizations
+                # Prepare data for visualizations for individual analysis
                 feature_importance_df = pd.DataFrame({
                     'Feature': list(shap_data['feature_importance'].keys()),
                     'Importance': list(shap_data['feature_importance'].values())
@@ -248,20 +248,22 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 waterfall_data = shap_data['feature_contributions']
                 features = list(waterfall_data.keys())
                 shap_values = [waterfall_data[f]['shap_value'] for f in features]
-                  # Tab 1: Individual Analysis
+                
+                # Tab 1: Individual Analysis
                 with analysis_tab1:
                     # Create subtabs for Feature Importance and Waterfall Plot
                     tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
-                    
-                    # Subtab 1: Feature Importance
+                      # Subtab 1: Feature Importance
                     with tab1:
-                        # Create bar chart with Plotly
+                        # Create bar chart with Plotly for individual analysis only
+                        st.markdown("### 📊 Individual Feature Importance")
+                        st.markdown("This shows the impact of each feature for this specific case.")
                         fig_importance = px.bar(
                             feature_importance_df, 
                             x='Importance', 
                             y='Feature', 
                             orientation='h',
-                            title='Feature Importance',
+                            title='Individual Feature Importance',
                             color='Importance',
                             color_continuous_scale='Blues'
                         )
@@ -288,7 +290,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                             showlegend=False
                         )
                         st.plotly_chart(fig_waterfall)
-                        
+                
                 # Tab 2: Combined Analysis
                 with analysis_tab2:
                     if 'combined_analysis' in shap_data:
