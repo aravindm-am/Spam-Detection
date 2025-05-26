@@ -526,7 +526,8 @@ with analysis_tab2:
                 marker_color='#007BFF',
                 hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
                 text=bin_labels
-            ))            fig_hist.add_trace(go.Bar(
+            ))
+            fig_hist.add_trace(go.Bar(
                 x=bin_centers,
                 y=hist_data['anomaly_counts'],
                 name='Anomaly',
@@ -543,4 +544,3 @@ with analysis_tab2:
             st.plotly_chart(fig_hist, use_container_width=True)
         else:
             st.warning("Anomaly score distribution data not available.")
-        
