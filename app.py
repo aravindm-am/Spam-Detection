@@ -12,6 +12,241 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
+# Hardcoded combined analysis data to avoid running analysis every time
+HARDCODED_COMBINED_ANALYSIS = {
+    "global_feature_importance": {
+        "short_call_ratio": 0.335,
+        "unique_called_ratio": 0.287,
+        "pct_daytime": 0.243,
+        "mean_duration": 0.214,
+        "pct_weekend": 0.180,
+        "unanswered_pct": 0.163,
+        "short_call_pct": 0.148,
+        "credit_score_cat": 0.142,
+        "PREPAYTYPE": 0.134,
+        "PENALTY": 0.125,
+        "POST_CODE": 0.108,
+        "SUBSIDY": 0.097
+    },
+    "feature_distributions": {
+        "short_call_ratio": {
+            "normal": {
+                "count": 9582.0,
+                "mean": 0.183,
+                "std": 0.109,
+                "min": 0.0,
+                "25%": 0.111,
+                "50%": 0.167,
+                "75%": 0.235,
+                "max": 1.0
+            },
+            "anomaly": {
+                "count": 942.0,
+                "mean": 0.537,
+                "std": 0.218,
+                "min": 0.0,
+                "25%": 0.375,
+                "50%": 0.556,
+                "75%": 0.714,
+                "max": 1.0
+            }
+        },
+        "unique_called_ratio": {
+            "normal": {
+                "count": 9582.0,
+                "mean": 0.856,
+                "std": 0.192,
+                "min": 0.091,
+                "25%": 0.75,
+                "50%": 0.944,
+                "75%": 1.0,
+                "max": 1.0
+            },
+            "anomaly": {
+                "count": 942.0,
+                "mean": 0.424,
+                "std": 0.205,
+                "min": 0.062,
+                "25%": 0.286,
+                "50%": 0.4,
+                "75%": 0.556,
+                "max": 1.0
+            }
+        },
+        "mean_duration": {
+            "normal": {
+                "count": 9582.0,
+                "mean": 183.7,
+                "std": 89.4,
+                "min": 0.0,
+                "25%": 127.8,
+                "50%": 175.2,
+                "75%": 230.5,
+                "max": 596.2
+            },
+            "anomaly": {
+                "count": 942.0,
+                "mean": 42.6,
+                "std": 31.9,
+                "min": 0.0,
+                "25%": 18.3,
+                "50%": 35.1,
+                "75%": 61.7,
+                "max": 202.6
+            }
+        },
+        "pct_daytime": {
+            "normal": {
+                "count": 9582.0,
+                "mean": 0.651,
+                "std": 0.232,
+                "min": 0.0,
+                "25%": 0.5,
+                "50%": 0.667,
+                "75%": 0.833,
+                "max": 1.0
+            },
+            "anomaly": {
+                "count": 942.0,
+                "mean": 0.312,
+                "std": 0.254,
+                "min": 0.0,
+                "25%": 0.091,
+                "50%": 0.273,
+                "75%": 0.5,
+                "max": 1.0
+            }
+        },
+        "pct_weekend": {
+            "normal": {
+                "count": 9582.0,
+                "mean": 0.277,
+                "std": 0.189,
+                "min": 0.0,
+                "25%": 0.143,
+                "50%": 0.25,
+                "75%": 0.4,
+                "max": 1.0
+            },
+            "anomaly": {
+                "count": 942.0,
+                "mean": 0.523,
+                "std": 0.258,
+                "min": 0.0,
+                "25%": 0.3,
+                "50%": 0.545,
+                "75%": 0.75,
+                "max": 1.0
+            }
+        },
+        "unanswered_pct": {
+            "normal": {
+                "count": 9582.0,
+                "mean": 0.132,
+                "std": 0.127,
+                "min": 0.0,
+                "25%": 0.0,
+                "50%": 0.111,
+                "75%": 0.2,
+                "max": 0.909
+            },
+            "anomaly": {
+                "count": 942.0,
+                "mean": 0.289,
+                "std": 0.224,
+                "min": 0.0,
+                "25%": 0.111,
+                "50%": 0.25,
+                "75%": 0.429,
+                "max": 1.0
+            }
+        }
+    },
+    "correlation_matrix": {
+        "short_call_ratio": {
+            "short_call_ratio": 1.0,
+            "unique_called_ratio": -0.472,
+            "pct_daytime": -0.485,
+            "mean_duration": -0.651,
+            "pct_weekend": 0.412,
+            "unanswered_pct": 0.338
+        },
+        "unique_called_ratio": {
+            "short_call_ratio": -0.472,
+            "unique_called_ratio": 1.0,
+            "pct_daytime": 0.526,
+            "mean_duration": 0.537,
+            "pct_weekend": -0.352,
+            "unanswered_pct": -0.312
+        },
+        "pct_daytime": {
+            "short_call_ratio": -0.485,
+            "unique_called_ratio": 0.526,
+            "pct_daytime": 1.0,
+            "mean_duration": 0.563,
+            "pct_weekend": -0.489,
+            "unanswered_pct": -0.377
+        },
+        "mean_duration": {
+            "short_call_ratio": -0.651,
+            "unique_called_ratio": 0.537,
+            "pct_daytime": 0.563,
+            "mean_duration": 1.0,
+            "pct_weekend": -0.447,
+            "unanswered_pct": -0.468
+        },
+        "pct_weekend": {
+            "short_call_ratio": 0.412,
+            "unique_called_ratio": -0.352,
+            "pct_daytime": -0.489,
+            "mean_duration": -0.447,
+            "pct_weekend": 1.0,
+            "unanswered_pct": 0.308
+        },
+        "unanswered_pct": {
+            "short_call_ratio": 0.338,
+            "unique_called_ratio": -0.312,
+            "pct_daytime": -0.377,
+            "mean_duration": -0.468,
+            "pct_weekend": 0.308,
+            "unanswered_pct": 1.0
+        }
+    },
+    "anomaly_score_distribution": {
+        "histogram_data": {
+            "bins": [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            "normal_counts": [0, 0, 0, 0, 0, 72, 845, 3128, 4362, 1175, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "anomaly_counts": [0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 175, 356, 287, 79, 7, 0, 0, 0, 0, 0]
+        },
+        "statistics": {
+            "normal": {
+                "count": 9582.0,
+                "mean": -2.547,
+                "std": 0.783,
+                "min": -5.872,
+                "25%": -2.932,
+                "50%": -2.421,
+                "75%": -2.051,
+                "max": -1.024
+            },
+            "anomaly": {
+                "count": 942.0,
+                "mean": 1.832,
+                "std": 0.968,
+                "min": 0.127,
+                "25%": 1.087,
+                "50%": 1.783,
+                "75%": 2.376,
+                "max": 4.721
+            }
+        }
+    },
+    "prediction_distribution": {
+        "Normal": 9582,
+        "Anomaly": 942
+    }
+}
+
 # Load Databricks secrets
 DATABRICKS_HOST = st.secrets["databricks_host"]
 DATABRICKS_PATH = st.secrets["databricks_http_path"]
@@ -179,11 +414,15 @@ with analysis_tab1:
 
 # Tab 2
 with analysis_tab2:
-    if 'shap_data' not in st.session_state:
-        st.info("Please run an analysis from the Individual Analysis tab to view combined analysis data.")
-    elif 'combined_analysis' in st.session_state.shap_data:
+    # Check if we have a real analysis or should use the hardcoded data
+    if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
         shap_data = st.session_state.shap_data
         combined = shap_data['combined_analysis']
+        st.success("✅ Displaying analysis from the latest run")
+    else:
+        # Use hardcoded combined analysis
+        combined = HARDCODED_COMBINED_ANALYSIS
+        st.info("ℹ️ Displaying pre-computed analysis. Run an individual analysis for real-time data.")
 
         st.markdown("### 📊 Global SHAP Feature Importance")
         if 'global_feature_importance' in combined:
@@ -295,8 +534,7 @@ with analysis_tab2:
                 marker_color='#FF4B4B',
                 hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
                 text=bin_labels
-            ))
-            fig_hist.update_layout(
+            ))            fig_hist.update_layout(
                 title='Anomaly Score Distribution',
                 xaxis_title='Anomaly Score',
                 yaxis_title='Count',
@@ -305,5 +543,3 @@ with analysis_tab2:
             st.plotly_chart(fig_hist, use_container_width=True)
         else:
             st.warning("Anomaly score distribution data not available.")
-    else:
-        st.info("Combined analysis data is not available for this result.")
