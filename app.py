@@ -366,11 +366,10 @@ with analysis_tab2:
             )
             st.plotly_chart(fig_hist, use_container_width=True)       
         else:
-            st.warning("Anomaly score distribution data not available.")
-    else:
+            st.warning("Anomaly score distribution data not available.")    else:
         st.info("Combined analysis data is not available for this result.")
 
-            else:
-                st.error(f"❌ Job failed: {result}")
+                else:
+                    st.error(f"❌ Job failed: {result}")
         else:
             st.warning("📱 Please enter a valid phone number.")
