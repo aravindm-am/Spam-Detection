@@ -292,7 +292,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                   # Tab 2: Combined Analysis - Currently Empty
                 with analysis_tab2:
                     # Placeholder for future combined analysis content
-                    st.info("Combined Analysis view will be implemented in a future update.")
+                    st.info("To be updated.")
             else:
                 st.error(f"❌ Job failed: {result}")
     else:
