@@ -454,5 +454,3 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 st.error(f"❌ Job failed: {result}")
     else:
         st.warning("📱 Please enter a valid phone number.")
-
-
