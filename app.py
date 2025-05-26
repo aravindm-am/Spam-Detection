@@ -13,10 +13,10 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 # Load Databricks secrets
-DATABRICKS_HOST = st.secrets[\"databricks_host\"]
-DATABRICKS_PATH = st.secrets[\"databricks_http_path\"]
-DATABRICKS_TOKEN = st.secrets[\"databricks_token\"]
-DATABRICKS_NOTEBOOK_PATH = st.secrets[\"databricks_notebook_path\"]
+DATABRICKS_HOST = st.secrets["databricks_host"]
+DATABRICKS_PATH = st.secrets["databricks_http_path"]
+DATABRICKS_TOKEN = st.secrets["databricks_token"]
+DATABRICKS_NOTEBOOK_PATH = st.secrets["databricks_notebook_path"]
 
 # Connect to Databricks
 @st.cache_resource
