@@ -248,8 +248,7 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 waterfall_data = shap_data['feature_contributions']
                 features = list(waterfall_data.keys())
                 shap_values = [waterfall_data[f]['shap_value'] for f in features]
-                
-                # Tab 1: Individual Analysis
+                  # Tab 1: Individual Analysis
                 with analysis_tab1:
                     # Create subtabs for Feature Importance and Waterfall Plot
                     tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
@@ -288,7 +287,10 @@ if st.button("Run Fraud Check", key="run_check_button"):
                             yaxis_title="Feature",
                             showlegend=False
                         )
-                        st.plotly_chart(fig_waterfall)                  # Tab 2: Combined Analysis                with analysis_tab2:
+                        st.plotly_chart(fig_waterfall)
+                        
+                # Tab 2: Combined Analysis
+                with analysis_tab2:
                     if 'combined_analysis' in shap_data:
                         combined = shap_data['combined_analysis']
                         
