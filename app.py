@@ -288,184 +288,164 @@ if st.button("Run Fraud Check", key="run_check_button"):
                             yaxis_title="Feature",
                             showlegend=False
                         )
-                        st.plotly_chart(fig_waterfall)                  # Tab 2: Combined Analysis
-                with analysis_tab2:
+                        st.plotly_chart(fig_waterfall)                  # Tab 2: Combined Analysis                with analysis_tab2:
                     if 'combined_analysis' in shap_data:
                         combined = shap_data['combined_analysis']
                         
-                        # Create tabs for different combined analyses
-                        combined_tab1, combined_tab2, combined_tab3, combined_tab4 = st.tabs([
-                            "📊 Global Feature Importance", 
-                            "📈 Feature Distribution", 
-                            "🔄 Feature Correlation", 
-                            "🔔 Anomaly Distribution"
-                        ])
+                        # 1. Global Feature Importance
+                        st.markdown("### 📊 Global SHAP Feature Importance")
+                        st.markdown("This shows the average impact of each feature across all samples in the dataset.")
                         
-                        # Tab 1: Global Feature Importance
-                        with combined_tab1:
-                            st.markdown("### Global SHAP Feature Importance")
-                            st.markdown("This shows the average impact of each feature across all samples in the dataset.")
+                        if 'global_feature_importance' in combined:
+                            global_importance_df = pd.DataFrame({
+                                'Feature': list(combined['global_feature_importance'].keys()),
+                                'Importance': list(combined['global_feature_importance'].values())
+                            }).sort_values('Importance', ascending=False)
                             
-                            # Convert global feature importance to DataFrame
-                            if 'global_feature_importance' in combined:
-                                global_importance_df = pd.DataFrame({
-                                    'Feature': list(combined['global_feature_importance'].keys()),
-                                    'Importance': list(combined['global_feature_importance'].values())
-                                }).sort_values('Importance', ascending=False)
-                                
-                                # Create bar chart with Plotly
-                                fig_global_importance = px.bar(
-                                    global_importance_df, 
-                                    x='Importance', 
-                                    y='Feature', 
-                                    orientation='h',
-                                    color='Importance',
-                                    color_continuous_scale='Viridis',
-                                    title='Global Feature Importance (All Data)'
-                                )
-                                st.plotly_chart(fig_global_importance, use_container_width=True)
-                            else:
-                                st.warning("Global feature importance data not available.")
+                            fig_global_importance = px.bar(
+                                global_importance_df, 
+                                x='Importance', 
+                                y='Feature', 
+                                orientation='h',
+                                color='Importance',
+                                color_continuous_scale='Viridis',
+                                title='Global Feature Importance (All Data)'
+                            )
+                            st.plotly_chart(fig_global_importance, use_container_width=True)
+                        else:
+                            st.warning("Global feature importance data not available.")
                         
-                        # Tab 2: Feature Distribution by Prediction
-                        with combined_tab2:
-                            st.markdown("### Feature Distribution: Normal vs Anomaly")
-                            st.markdown("Compare how feature values differ between normal and anomalous calls.")
-                            
-                            if 'feature_distributions' in combined:
-                                # Let user select which feature to examine
-                                select_feature = st.selectbox(
-                                    "Select feature to analyze:", 
-                                    options=list(combined['feature_distributions'].keys())
-                                )
-                                
-                                if select_feature:
-                                    feature_dist = combined['feature_distributions'][select_feature]
-                                    
-                                    # Create a comparison dataframe
-                                    normal_values = feature_dist['normal']
-                                    anomaly_values = feature_dist['anomaly']
-                                    
-                                    comparison_df = pd.DataFrame({
-                                        'Statistic': list(normal_values.keys()),
-                                        'Normal': list(normal_values.values()),
-                                        'Anomaly': list(anomaly_values.values())
-                                    })
-                                    
-                                    # Display as a table
-                                    st.dataframe(comparison_df)
-                                    
-                                    # Create visualization
-                                    fig_dist = go.Figure()
-                                    fig_dist.add_trace(go.Bar(
-                                        x=list(normal_values.keys())[1:-1],  # Skip count and first percentile
-                                        y=list(normal_values.values())[1:-1],
-                                        name="Normal",
-                                        marker_color='#007BFF'
-                                    ))
-                                    fig_dist.add_trace(go.Bar(
-                                        x=list(anomaly_values.keys())[1:-1],  # Skip count and first percentile 
-                                        y=list(anomaly_values.values())[1:-1],
-                                        name="Anomaly",
-                                        marker_color='#FF4B4B'
-                                    ))
-                                    
-                                    fig_dist.update_layout(
-                                        title=f"Distribution Statistics: {select_feature}",
-                                        xaxis_title="Statistic",
-                                        yaxis_title="Value",
-                                        barmode='group'
-                                    )
-                                    
-                                    st.plotly_chart(fig_dist, use_container_width=True)
-                            else:
-                                st.warning("Feature distribution data not available.")
+                        # 2. Feature Distribution by Prediction
+                        st.markdown("### 📈 Feature Distribution: Normal vs Anomaly")
+                        st.markdown("Compare how feature values differ between normal and anomalous calls.")
                         
-                        # Tab 3: Correlation Matrix
-                        with combined_tab3:
-                            st.markdown("### Feature Correlation Matrix")
-                            st.markdown("See how features correlate with each other across all samples.")
+                        if 'feature_distributions' in combined:
+                            select_feature = st.selectbox(
+                                "Select feature to analyze:", 
+                                options=list(combined['feature_distributions'].keys())
+                            )
                             
-                            if 'correlation_matrix' in combined:
-                                # Convert correlation matrix to DataFrame
-                                corr_df = pd.DataFrame.from_dict(combined['correlation_matrix'])
+                            if select_feature:
+                                feature_dist = combined['feature_distributions'][select_feature]
                                 
-                                # Create heatmap
-                                fig_corr = px.imshow(
-                                    corr_df,
-                                    color_continuous_scale='RdBu_r',
-                                    zmin=-1, 
-                                    zmax=1,
-                                    title='Feature Correlation Matrix'
-                                )
+                                normal_values = feature_dist['normal']
+                                anomaly_values = feature_dist['anomaly']
                                 
-                                fig_corr.update_layout(
-                                    height=600,
-                                    width=700
-                                )
+                                comparison_df = pd.DataFrame({
+                                    'Statistic': list(normal_values.keys()),
+                                    'Normal': list(normal_values.values()),
+                                    'Anomaly': list(anomaly_values.values())
+                                })
                                 
-                                st.plotly_chart(fig_corr, use_container_width=True)
-                            else:
-                                st.warning("Correlation matrix data not available.")
-                        
-                        # Tab 4: Anomaly Score Distribution
-                        with combined_tab4:
-                            st.markdown("### Anomaly Score Distribution")
-                            st.markdown("Distribution of anomaly scores for normal and anomalous samples.")
-                            
-                            if 'anomaly_score_distribution' in combined and 'prediction_distribution' in combined:
-                                # Create a pie chart for prediction distribution
-                                labels = list(combined['prediction_distribution'].keys())
-                                values = list(combined['prediction_distribution'].values())
+                                st.dataframe(comparison_df)
                                 
-                                fig_pie = px.pie(
-                                    names=labels,
-                                    values=values,
-                                    title='Prediction Distribution',
-                                    color=labels,
-                                    color_discrete_map={'Normal': '#007BFF', 'Anomaly': '#FF4B4B'}
-                                )
-                                
-                                st.plotly_chart(fig_pie, use_container_width=True)
-                                
-                                # Create histogram for anomaly scores
-                                hist_data = combined['anomaly_score_distribution']['histogram_data']
-                                
-                                fig_hist = go.Figure()
-                                
-                                # Convert bin edges to bin centers and labels
-                                bins = hist_data['bins']
-                                bin_centers = [(bins[i] + bins[i+1])/2 for i in range(len(bins)-1)]
-                                bin_labels = [f"{bins[i]} to {bins[i+1]}" for i in range(len(bins)-1)]
-                                
-                                fig_hist.add_trace(go.Bar(
-                                    x=bin_centers,
-                                    y=hist_data['normal_counts'],
-                                    name='Normal',
-                                    marker_color='#007BFF',
-                                    hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
-                                    text=bin_labels
+                                fig_dist = go.Figure()
+                                fig_dist.add_trace(go.Bar(
+                                    x=list(normal_values.keys())[1:-1],  # Skip count and first percentile
+                                    y=list(normal_values.values())[1:-1],
+                                    name="Normal",
+                                    marker_color='#007BFF'
+                                ))
+                                fig_dist.add_trace(go.Bar(
+                                    x=list(anomaly_values.keys())[1:-1],  # Skip count and first percentile 
+                                    y=list(anomaly_values.values())[1:-1],
+                                    name="Anomaly",
+                                    marker_color='#FF4B4B'
                                 ))
                                 
-                                fig_hist.add_trace(go.Bar(
-                                    x=bin_centers,
-                                    y=hist_data['anomaly_counts'],
-                                    name='Anomaly',
-                                    marker_color='#FF4B4B',
-                                    hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
-                                    text=bin_labels
-                                ))
-                                
-                                fig_hist.update_layout(
-                                    title='Anomaly Score Distribution',
-                                    xaxis_title='Anomaly Score',
-                                    yaxis_title='Count',
+                                fig_dist.update_layout(
+                                    title=f"Distribution Statistics: {select_feature}",
+                                    xaxis_title="Statistic",
+                                    yaxis_title="Value",
                                     barmode='group'
                                 )
                                 
-                                st.plotly_chart(fig_hist, use_container_width=True)
-                            else:
-                                st.warning("Anomaly score distribution data not available.")
+                                st.plotly_chart(fig_dist, use_container_width=True)
+                        else:
+                            st.warning("Feature distribution data not available.")
+                        
+                        # 3. Correlation Matrix
+                        st.markdown("### 🔄 Feature Correlation Matrix")
+                        st.markdown("See how features correlate with each other across all samples.")
+                        
+                        if 'correlation_matrix' in combined:
+                            corr_df = pd.DataFrame.from_dict(combined['correlation_matrix'])
+                            
+                            fig_corr = px.imshow(
+                                corr_df,
+                                color_continuous_scale='RdBu_r',
+                                zmin=-1, 
+                                zmax=1,
+                                title='Feature Correlation Matrix'
+                            )
+                            
+                            fig_corr.update_layout(
+                                height=600,
+                                width=700
+                            )
+                            
+                            st.plotly_chart(fig_corr, use_container_width=True)
+                        else:
+                            st.warning("Correlation matrix data not available.")
+                        
+                        # 4. Anomaly Score Distribution
+                        st.markdown("### 🔔 Anomaly Score Distribution")
+                        st.markdown("Distribution of anomaly scores for normal and anomalous samples.")
+                        
+                        if 'anomaly_score_distribution' in combined and 'prediction_distribution' in combined:
+                            # Create a pie chart for prediction distribution
+                            labels = list(combined['prediction_distribution'].keys())
+                            values = list(combined['prediction_distribution'].values())
+                            
+                            fig_pie = px.pie(
+                                names=labels,
+                                values=values,
+                                title='Prediction Distribution',
+                                color=labels,
+                                color_discrete_map={'Normal': '#007BFF', 'Anomaly': '#FF4B4B'}
+                            )
+                            
+                            st.plotly_chart(fig_pie, use_container_width=True)
+                            
+                            # Create histogram for anomaly scores
+                            hist_data = combined['anomaly_score_distribution']['histogram_data']
+                            
+                            fig_hist = go.Figure()
+                            
+                            # Convert bin edges to bin centers and labels
+                            bins = hist_data['bins']
+                            bin_centers = [(bins[i] + bins[i+1])/2 for i in range(len(bins)-1)]
+                            bin_labels = [f"{bins[i]} to {bins[i+1]}" for i in range(len(bins)-1)]
+                            
+
+                            fig_hist.add_trace(go.Bar(
+                                x=bin_centers,
+                                y=hist_data['normal_counts'],
+                                name='Normal',
+                                marker_color='#007BFF',
+                                hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
+                                text=bin_labels
+                            ))
+                            
+                            fig_hist.add_trace(go.Bar(
+                                x=bin_centers,
+                                y=hist_data['anomaly_counts'],
+                                name='Anomaly',
+                                marker_color='#FF4B4B',
+                                hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
+                                text=bin_labels
+                            ))
+                            
+                            fig_hist.update_layout(
+                                title='Anomaly Score Distribution',
+                                xaxis_title='Anomaly Score',
+                                yaxis_title='Count',
+                                barmode='group'
+                            )
+                            
+                            st.plotly_chart(fig_hist, use_container_width=True)
+                        else:
+                            st.warning("Anomaly score distribution data not available.")
                     else:
                         st.info("Combined analysis data is not available for this result.")
             else:
@@ -474,4 +454,3 @@ if st.button("Run Fraud Check", key="run_check_button"):
         st.warning("📱 Please enter a valid phone number.")
 
 
- 
