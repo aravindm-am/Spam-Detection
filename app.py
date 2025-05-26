@@ -237,9 +237,9 @@ with analysis_tab2:
                 orientation='h',
                 color='Importance',
                 color_continuous_scale='Viridis',
-                title='Global Feature Importance (All Data)'
-            )
-            st.plotly_chart(fig_global_importance, use_container_width=True)        else:
+                title='Global Feature Importance (All Data)'            )
+            st.plotly_chart(fig_global_importance, use_container_width=True)
+        else:
             st.warning("Global feature importance data not available.")
         
         # 2. Feature Distribution by Prediction
@@ -276,9 +276,9 @@ with analysis_tab2:
                     x=list(anomaly_values.keys())[1:-1],  # Skip count and first percentile 
                     y=list(anomaly_values.values())[1:-1],
                     name="Anomaly",
-                    marker_color='#FF4B4B'
-                ))
-                  fig_dist.update_layout(
+                    marker_color='#FF4B4B'                ))
+                
+                fig_dist.update_layout(
                     title=f"Distribution Statistics: {select_feature}",
                     xaxis_title="Statistic",
                     yaxis_title="Value",
@@ -294,15 +294,15 @@ with analysis_tab2:
         
         if 'correlation_matrix' in combined:
             corr_df = pd.DataFrame.from_dict(combined['correlation_matrix'])
-            
-            fig_corr = px.imshow(
+              fig_corr = px.imshow(
                 corr_df,
                 color_continuous_scale='RdBu_r',
                 zmin=-1, 
                 zmax=1,
                 title='Feature Correlation Matrix'
             )
-              fig_corr.update_layout(
+            
+            fig_corr.update_layout(
                 height=600,
                 width=700
             )
@@ -336,9 +336,9 @@ with analysis_tab2:
             
             # Convert bin edges to bin centers and labels
             bins = hist_data['bins']
-            bin_centers = [(bins[i] + bins[i+1])/2 for i in range(len(bins)-1)]
-            bin_labels = [f"{bins[i]} to {bins[i+1]}" for i in range(len(bins)-1)]
-                fig_hist.add_trace(go.Bar(
+            bin_centers = [(bins[i] + bins[i+1])/2 for i in range(len(bins)-1)]            bin_labels = [f"{bins[i]} to {bins[i+1]}" for i in range(len(bins)-1)]
+            
+            fig_hist.add_trace(go.Bar(
                 x=bin_centers,
                 y=hist_data['normal_counts'],
                 name='Normal',
@@ -361,13 +361,14 @@ with analysis_tab2:
                 xaxis_title='Anomaly Score',
                 yaxis_title='Count',
                 barmode='group'
-            )
-            st.plotly_chart(fig_hist, use_container_width=True)        else:
-            st.warning("Anomaly score distribution data not available.")
-    else:
+            )            st.plotly_chart(fig_hist, use_container_width=True)
+        else:
+            st.warning("Anomaly score distribution data not available.")    else:
         st.info("Combined analysis data is not available for this result.")
 
                 if result != "SUCCESS":
                     st.error(f"❌ Job failed: {result}")
+                else:
+                    pass  # Success case already handled above
         else:
             st.warning("📱 Please enter a valid phone number.")
