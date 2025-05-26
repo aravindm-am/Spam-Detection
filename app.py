@@ -357,13 +357,13 @@ with analysis_tab2:
                 hovertemplate='Bin: %{text}<br>Count: %{y}<extra></extra>',
                 text=bin_labels
             ))
-            
-            fig_hist.update_layout(
+              fig_hist.update_layout(
                 title='Anomaly Score Distribution',
                 xaxis_title='Anomaly Score',
                 yaxis_title='Count',
                 barmode='group'
-            )            st.plotly_chart(fig_hist, use_container_width=True)       
+            )
+            st.plotly_chart(fig_hist, use_container_width=True)
         else:
             st.warning("Anomaly score distribution data not available.")
     else:
