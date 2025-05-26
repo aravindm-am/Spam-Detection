@@ -363,7 +363,7 @@ with analysis_tab2:
                 xaxis_title='Anomaly Score',
                 yaxis_title='Count',
                 barmode='group'
-            )            )
+            ))
             st.plotly_chart(fig_hist, use_container_width=True)
     else:
         st.info("Combined analysis data is not available for this result.")
