@@ -362,13 +362,14 @@ with analysis_tab2:
                 barmode='group'
             )
             st.plotly_chart(fig_hist, use_container_width=True)
-        else:            st.warning("Anomaly score distribution data not available.")
+        else:
+            st.warning("Anomaly score distribution data not available.")
     else:
         st.info("Combined analysis data is not available for this result.")
 
-                if result != "SUCCESS":
-                    st.error(f"❌ Job failed: {result}")
-                else:
-                    pass  # Success case already handled above
-        else:
-            st.warning("📱 Please enter a valid phone number.")
+# Handle job failure and empty phone number cases for Individual Analysis
+if 'run_button' in locals() and run_button:
+    if not phone_number.strip():
+        st.warning("📱 Please enter a valid phone number.")
+    elif result != "SUCCESS":
+        st.error(f"❌ Job failed: {result}")
