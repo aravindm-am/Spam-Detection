@@ -370,7 +370,7 @@ with analysis_tab2:
     else:
         st.info("Combined analysis data is not available for this result.")
 
-             else:
-                 st.error(f"❌ Job failed: {result}")
+            else:
+                st.error(f"❌ Job failed: {result}")
         else:
             st.warning("📱 Please enter a valid phone number.")
