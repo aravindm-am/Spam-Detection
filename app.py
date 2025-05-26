@@ -233,59 +233,62 @@ if st.button("Run Fraud Check", key="run_check_button"):
                 st.markdown(f"**Phone Number**: `{phone_number}`")
                 st.markdown(f"**Prediction**: `{shap_data['prediction']}`")
                 st.markdown(f"**Anomaly Score**: `{shap_data['anomaly_score']:.4f}`")
-                
-                # Display the explanation if available
+                  # Display the explanation if available
                 if 'explanation' in shap_data and shap_data['explanation']:
                     st.markdown(f"**AI Explanation**: {shap_data['explanation']}")
                 
-                # Create and display Feature Importance plot
-                st.subheader("📊 SHAP Feature Importance")
+                # Create the "Individual Analysis" tab
+                st.subheader("🔎 Individual Analysis")
                 
-                # Convert feature importance to DataFrame for plotting
-                feature_importance_df = pd.DataFrame({
-                    'Feature': list(shap_data['feature_importance'].keys()),
-                    'Importance': list(shap_data['feature_importance'].values())
-                }).sort_values('Importance', ascending=False)
+                # Create tabs for Feature Importance and Waterfall Plot
+                tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
                 
-                # Create bar chart with Plotly
-                fig_importance = px.bar(
-                    feature_importance_df, 
-                    x='Importance', 
-                    y='Feature', 
-                    orientation='h',
-                    title='Feature Importance',
-                    color='Importance',
-                    color_continuous_scale='Blues'
-                )
-                st.plotly_chart(fig_importance)
+                # Tab 1: Feature Importance
+                with tab1:
+                    # Convert feature importance to DataFrame for plotting
+                    feature_importance_df = pd.DataFrame({
+                        'Feature': list(shap_data['feature_importance'].keys()),
+                        'Importance': list(shap_data['feature_importance'].values())
+                    }).sort_values('Importance', ascending=False)
+                    
+                    # Create bar chart with Plotly
+                    fig_importance = px.bar(
+                        feature_importance_df, 
+                        x='Importance', 
+                        y='Feature', 
+                        orientation='h',
+                        title='Feature Importance',
+                        color='Importance',
+                        color_continuous_scale='Blues'
+                    )
+                    st.plotly_chart(fig_importance)
                 
-                # Create and display Waterfall Plot
-                st.subheader("🔍 SHAP Waterfall Plot")
-                
-                # Extract waterfall data
-                waterfall_data = shap_data['feature_contributions']
-                features = list(waterfall_data.keys())
-                shap_values = [waterfall_data[f]['shap_value'] for f in features]
-                
-                # Create waterfall chart with Plotly
-                fig_waterfall = go.Figure(go.Waterfall(
-                    name="SHAP Values", 
-                    orientation="h",
-                    y=features,
-                    x=shap_values,
-                    connector={"line":{"color":"rgb(63, 63, 63)"}},
-                    decreasing={"marker":{"color":"#FF4B4B"}},
-                    increasing={"marker":{"color":"#007BFF"}},
-                    base=shap_data['base_value']
-                ))
-                
-                fig_waterfall.update_layout(
-                    title="SHAP Waterfall Plot",
-                    xaxis_title="SHAP Value",
-                    yaxis_title="Feature",
-                    showlegend=False
-                )
-                st.plotly_chart(fig_waterfall)
+                # Tab 2: Waterfall Plot
+                with tab2:
+                    # Extract waterfall data
+                    waterfall_data = shap_data['feature_contributions']
+                    features = list(waterfall_data.keys())
+                    shap_values = [waterfall_data[f]['shap_value'] for f in features]
+                    
+                    # Create waterfall chart with Plotly
+                    fig_waterfall = go.Figure(go.Waterfall(
+                        name="SHAP Values", 
+                        orientation="h",
+                        y=features,
+                        x=shap_values,
+                        connector={"line":{"color":"rgb(63, 63, 63)"}},
+                        decreasing={"marker":{"color":"#FF4B4B"}},
+                        increasing={"marker":{"color":"#007BFF"}},
+                        base=shap_data['base_value']
+                    ))
+                    
+                    fig_waterfall.update_layout(
+                        title="SHAP Waterfall Plot",
+                        xaxis_title="SHAP Value",
+                        yaxis_title="Feature",
+                        showlegend=False
+                    )
+                    st.plotly_chart(fig_waterfall)
             else:
                 st.error(f"❌ Job failed: {result}")
     else:
