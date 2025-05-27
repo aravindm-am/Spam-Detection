@@ -15,19 +15,41 @@ import plotly.express as px
 # Apply custom CSS to left-align the app and optimize layout
 st.markdown("""
 <style>
+    html, body, .block-container {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
     .block-container {
-        max-width: 100%;
-        padding-top: 0.5rem;
-        padding-right: 0.5rem;
-        padding-left: 0.5rem;
-        padding-bottom: 0.5rem;
+        padding-top: 0.5rem !important;
+        padding-right: 1rem !important;
+        padding-left: 1rem !important;
+        padding-bottom: 0.5rem !important;
     }
     .stPlotlyChart {
         margin-bottom: 0 !important;
     }
-    /* Make the app use the full width */
-    section.main > div {
-        width: 100%;
+    /* Remove Streamlit's default centering and width restrictions */
+    [data-testid="stAppViewContainer"] > .main {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    [data-testid="stHeader"] {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    [data-testid="stSidebar"] {
+        margin: 0 !important;
+        padding: 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
