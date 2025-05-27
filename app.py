@@ -455,64 +455,80 @@ with analysis_tab1:
                 normal_values = feature_dist['normal']
                 anomaly_values = feature_dist['anomaly']
 
-                comparison_df = pd.DataFrame({
-                    'Statistic': list(normal_values.keys()),
-                    'Normal': list(normal_values.values()),
-                    'Anomaly': list(anomaly_values.values())
-                })
-                st.dataframe(comparison_df)
-
-                fig_dist = go.Figure()
-                fig_dist.add_trace(go.Bar(
-                    x=list(normal_values.keys())[1:-1],
-                    y=list(normal_values.values())[1:-1],
-                    name="Normal",
-                    marker_color='#007BFF'
-                ))
-                fig_dist.add_trace(go.Bar(
-                    x=list(anomaly_values.keys())[1:-1],
-                    y=list(anomaly_values.values())[1:-1],
-                    name="Anomaly",
-                    marker_color='#FF4B4B'
-                ))
-                fig_dist.update_layout(
-                    title=f"Distribution Statistics: {select_feature}",
-                    xaxis_title="Statistic",
-                    yaxis_title="Value",
-                    barmode='group'
+                # Create columns for data table and chart
+                col1, col2 = st.columns([1, 2])
+                
+                with col1:
+                    comparison_df = pd.DataFrame({
+                        'Statistic': list(normal_values.keys()),
+                        'Normal': list(normal_values.values()),
+                        'Anomaly': list(anomaly_values.values())
+                    })
+                    st.dataframe(comparison_df, height=340)
+                
+                with col2:
+                    fig_dist = go.Figure()
+                    fig_dist.add_trace(go.Bar(
+                        x=list(normal_values.keys())[1:-1],
+                        y=list(normal_values.values())[1:-1],
+                        name="Normal",
+                        marker_color='#007BFF'
+                    ))
+                    fig_dist.add_trace(go.Bar(
+                        x=list(anomaly_values.keys())[1:-1],
+                        y=list(anomaly_values.values())[1:-1],
+                        name="Anomaly",
+                        marker_color='#FF4B4B'
+                    ))
+                    fig_dist.update_layout(
+                        title=f"Distribution Statistics: {select_feature}",
+                        xaxis_title="Statistic",
+                        yaxis_title="Value",
+                        barmode='group',
+                        height=350
+                    )
+                    st.plotly_chart(fig_dist, use_container_width=True)
+        else:
+            st.warning("Feature distribution data not available.")        # Create a two-column layout for correlation matrix and prediction distribution
+        st.markdown("### 🔄 Analysis Insights")
+        col1, col2 = st.columns(2)
+        
+        # Column 1: Correlation Matrix
+        with col1:
+            if 'correlation_matrix' in combined:
+                corr_df = pd.DataFrame.from_dict(combined['correlation_matrix'])
+                fig_corr = px.imshow(
+                    corr_df,
+                    color_continuous_scale='RdBu_r',
+                    zmin=-1, 
+                    zmax=1,
+                    title='Feature Correlation Matrix'
                 )
-                st.plotly_chart(fig_dist, use_container_width=True)
-        else:
-            st.warning("Feature distribution data not available.")
-
-        st.markdown("### 🔄 Feature Correlation Matrix")
-        if 'correlation_matrix' in combined:
-            corr_df = pd.DataFrame.from_dict(combined['correlation_matrix'])
-            fig_corr = px.imshow(
-                corr_df,
-                color_continuous_scale='RdBu_r',
-                zmin=-1, 
-                zmax=1,
-                title='Feature Correlation Matrix'
-            )
-            fig_corr.update_layout(height=600, width=700)
-            st.plotly_chart(fig_corr, use_container_width=True)
-        else:
-            st.warning("Correlation matrix data not available.")
-
+                fig_corr.update_layout(height=500, width=500)
+                st.plotly_chart(fig_corr, use_container_width=True)
+            else:
+                st.warning("Correlation matrix data not available.")
+        
+        # Column 2: Prediction Distribution Pie Chart
+        with col2:
+            if 'prediction_distribution' in combined:
+                labels = list(combined['prediction_distribution'].keys())
+                values = list(combined['prediction_distribution'].values())
+                fig_pie = px.pie(
+                    names=labels,
+                    values=values,
+                    title='Prediction Distribution',
+                    color=labels,
+                    color_discrete_map={'Normal': '#007BFF', 'Anomaly': '#FF4B4B'}
+                )
+                fig_pie.update_layout(height=500)
+                st.plotly_chart(fig_pie, use_container_width=True)
+            else:
+                st.warning("Prediction distribution data not available.")
+                
+        # Full width for Anomaly Score Distribution
         st.markdown("### 🔔 Anomaly Score Distribution")
-        if 'anomaly_score_distribution' in combined and 'prediction_distribution' in combined:
-            labels = list(combined['prediction_distribution'].keys())
-            values = list(combined['prediction_distribution'].values())
-            fig_pie = px.pie(
-                names=labels,
-                values=values,
-                title='Prediction Distribution',
-                color=labels,
-                color_discrete_map={'Normal': '#007BFF', 'Anomaly': '#FF4B4B'}
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
-
+        if 'anomaly_score_distribution' in combined:
             hist_data = combined['anomaly_score_distribution']['histogram_data']
             bins = hist_data['bins']
             bin_centers = [(bins[i] + bins[i+1])/2 for i in range(len(bins)-1)]
