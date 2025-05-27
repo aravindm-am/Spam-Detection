@@ -479,6 +479,9 @@ with tabs[0]:
         # Use hardcoded combined analysis
         combined = HARDCODED_COMBINED_ANALYSIS
         st.info("ℹ️ Displaying pre-computed analysis. Run an individual analysis for real-time data.")
+
+
+    
     
     # Main container for the combined analysis layout
     with st.container():
@@ -488,11 +491,11 @@ with tabs[0]:
         available_height = st.session_state['viewport_height'] - header_height - padding
         # 2 rows: each row gets half the available height
         row_height = max(200, int(available_height / 2))
-        # 2 columns: each column gets half the width
-        col_width = int(st.session_state['viewport_width'] / 2)
-
-        # First row - Feature importance and small charts
-        row1_col1, row1_col2 = st.columns([2, 1], gap="medium")
+        # 3 columns for the first row
+        col_width = int(st.session_state['viewport_width'] / 3)
+    
+        # First row - 3 equal columns for the three main plots
+        row1_col1, row1_col2, row1_col3 = st.columns(3, gap="medium")
         with row1_col1:
             if 'global_feature_importance' in combined:
                 st.markdown("#### 📊 Global SHAP Feature Importance")
@@ -517,8 +520,8 @@ with tabs[0]:
                 st.plotly_chart(fig_global_importance, use_container_width=True)
             else:
                 st.warning("Global feature importance data not available.")
+    
         with row1_col2:
-            # Stack Prediction Distribution and Correlation Matrix vertically, each taking half the height
             if 'prediction_distribution' in combined:
                 st.markdown("#### 🔄 Prediction Distribution")
                 labels = list(combined['prediction_distribution'].keys())
@@ -532,13 +535,15 @@ with tabs[0]:
                     hole=0.4
                 )
                 fig_pie.update_layout(
-                    height=int(row_height/2),
+                    height=row_height,
                     margin=dict(l=5, r=5, t=5, b=5),
                     legend=dict(orientation="h", yanchor="bottom", y=-0.2)
                 )
                 st.plotly_chart(fig_pie, use_container_width=True)
             else:
                 st.warning("Prediction distribution data not available.")
+    
+        with row1_col3:
             if 'correlation_matrix' in combined:
                 st.markdown("#### 🔄 Correlation Matrix")
                 important_features = ["short_call_ratio", "mean_duration", "pct_daytime", "pct_weekend"]
@@ -554,13 +559,13 @@ with tabs[0]:
                     text_auto='.2f'
                 )
                 fig_corr.update_layout(
-                    height=int(row_height/2),
+                    height=row_height,
                     margin=dict(l=5, r=5, t=5, b=5),
                 )
                 fig_corr.update_traces(texttemplate="%{text}", textfont={"size": 10})
                 st.plotly_chart(fig_corr, use_container_width=True)
             else:
-                st.warning("Correlation matrix data not available.")
+                st.warning("Correlation matrix data not available.")  
         row2_col1, row2_col2 = st.columns(2)
         with row2_col1:
             if 'feature_distributions' in combined:
