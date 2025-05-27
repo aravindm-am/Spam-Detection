@@ -386,6 +386,51 @@ st.title("📞 Telecom Fraud Detection")
 # Change the order of tabs - Combined Analysis first, Individual Analysis second
 tabs = st.tabs(["📊 Combined Analysis", "🔎 Individual Analysis"])
 
+# --- Responsive height: inject JS to get viewport height and set in session_state ---
+if 'viewport_height' not in st.session_state:
+    st.session_state['viewport_height'] = 800  # fallback default
+
+st.markdown('''
+<script>
+(function() {
+    function sendHeight() {
+        const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        window.parent.postMessage({streamlitSetFrameHeight: height}, '*');
+        const streamlitDoc = window.parent.document;
+        if (streamlitDoc) {
+            const input = streamlitDoc.getElementById('streamlit-viewport-height');
+            if (input) input.value = height;
+        }
+    }
+    window.addEventListener('resize', sendHeight);
+    sendHeight();
+})();
+</script>
+<input type="hidden" id="streamlit-viewport-height" value="800" />
+''', unsafe_allow_html=True)
+
+viewport_height = st.experimental_get_query_params().get('viewport_height', [None])[0]
+if viewport_height:
+    try:
+        st.session_state['viewport_height'] = int(viewport_height)
+    except:
+        pass
+
+# --- Calculate plot heights ---
+# Reserve some space for header, tabs, and info boxes
+header_height = 180  # px (title, tabs, info)
+avail_height = st.session_state['viewport_height'] - header_height
+if avail_height < 400:
+    avail_height = 600  # fallback
+
+# 2 rows: row1 (top, 1/2), row2 (bottom, 1/2)
+row_height = int(avail_height / 2)
+# row1: left (feature importance, 2/3), right (prediction + corr, 1/3)
+row1_left = int(row_height * 0.98)
+row1_right = int(row_height * 0.48)
+# row2: left (feature dist), right (anomaly score)
+row2_height = int(row_height * 0.98)
+
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
     # Check if we have a real analysis or should use the hardcoded data
@@ -400,21 +445,15 @@ with tabs[0]:
     
     # Main container for the combined analysis layout
     with st.container():
-        # First row - Feature importance and small charts
-        row1_col1, row1_col2 = st.columns([2, 1])
-        
-        # Feature Importance (larger column)
+        # --- First row ---
+        row1_col1, row1_col2 = st.columns([2, 1], gap="small")
         with row1_col1:
             if 'global_feature_importance' in combined:
                 st.markdown("#### 📊 Global SHAP Feature Importance")
                 global_importance_df = pd.DataFrame({
                     'Feature': list(combined['global_feature_importance'].keys()),
                     'Importance': list(combined['global_feature_importance'].values())
-                }).sort_values('Importance', ascending=False)
-                
-                # Show only top 10 features for better visibility
-                global_importance_df = global_importance_df.head(10)
-                
+                }).sort_values('Importance', ascending=False).head(10)
                 fig_global_importance = px.bar(
                     global_importance_df, 
                     x='Importance', 
@@ -425,14 +464,12 @@ with tabs[0]:
                     title=None
                 )
                 fig_global_importance.update_layout(
-                    height=280,
+                    height=row1_left,
                     margin=dict(l=5, r=5, t=5, b=5),
                 )
                 st.plotly_chart(fig_global_importance, use_container_width=True)
             else:
                 st.warning("Global feature importance data not available.")
-        
-        # Second column in row 1 - contains Prediction Distribution and Correlation Matrix stacked
         with row1_col2:
             # Prediction Distribution
             if 'prediction_distribution' in combined:
@@ -448,67 +485,52 @@ with tabs[0]:
                     hole=0.4
                 )
                 fig_pie.update_layout(
-                    height=140, 
+                    height=int(row1_right/2)-10, 
                     margin=dict(l=5, r=5, t=5, b=5),
                     legend=dict(orientation="h", yanchor="bottom", y=-0.2)
                 )
                 st.plotly_chart(fig_pie, use_container_width=True)
             else:
                 st.warning("Prediction distribution data not available.")
-                
             # Correlation Matrix
             if 'correlation_matrix' in combined:
                 st.markdown("#### 🔄 Correlation Matrix")
-                # Use only most important features for better display
                 important_features = ["short_call_ratio", "mean_duration", "pct_daytime", "pct_weekend"]
                 filtered_corr = {k: {k2: v2 for k2, v2 in v.items() if k2 in important_features} 
                                 for k, v in combined['correlation_matrix'].items() 
                                 if k in important_features}
-                
                 corr_df = pd.DataFrame.from_dict(filtered_corr)
-                
-                # Create correlation heatmap with text annotations for better readability
                 fig_corr = px.imshow(
                     corr_df,
                     color_continuous_scale='RdBu_r',
                     zmin=-1, 
                     zmax=1,
-                    text_auto='.2f'  # Add text annotations with 2 decimal places
+                    text_auto='.2f'
                 )
                 fig_corr.update_layout(
-                    height=140,
+                    height=int(row1_right/2)-10,
                     margin=dict(l=5, r=5, t=5, b=5),
                 )
-                # Improve text visibility
                 fig_corr.update_traces(texttemplate="%{text}", textfont={"size": 10})
                 st.plotly_chart(fig_corr, use_container_width=True)
             else:
                 st.warning("Correlation matrix data not available.")
-
-        # Second row layout
-        row2_col1, row2_col2 = st.columns(2)
-        
-        # Column 1: Feature Distribution
+        # --- Second row ---
+        row2_col1, row2_col2 = st.columns(2, gap="small")
         with row2_col1:
             if 'feature_distributions' in combined:
                 st.markdown("#### 📈 Feature Distribution")
-                
-                # Create a select box but more compact
                 feature_options = list(combined['feature_distributions'].keys())
                 select_feature = st.selectbox(
                     "Select feature:", 
                     options=feature_options,
                     key="compact_feature_selector"
                 )
-                
                 if select_feature:
                     feature_dist = combined['feature_distributions'][select_feature]
                     normal_values = feature_dist['normal']
                     anomaly_values = feature_dist['anomaly']
-                    
-                    # Use more compact visualization
                     stats_to_show = ['mean', '25%', '50%', '75%']
-                    
                     fig_dist = go.Figure()
                     fig_dist.add_trace(go.Bar(
                         x=[normal_values[s] for s in stats_to_show],
@@ -528,26 +550,21 @@ with tabs[0]:
                         title=None,
                         xaxis_title="Value",
                         barmode='group',
-                        height=250,
+                        height=row2_height,
                         margin=dict(l=5, r=5, t=20, b=20),
                         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
                     )
                     st.plotly_chart(fig_dist, use_container_width=True)
             else:
                 st.warning("Feature distribution data not available.")
-        
-        # Column 2: Anomaly Score Distribution
         with row2_col2:
             if 'anomaly_score_distribution' in combined:
                 st.markdown("#### 🔔 Anomaly Score Distribution")
                 hist_data = combined['anomaly_score_distribution']['histogram_data']
                 bins = hist_data['bins']
-                # Use fewer bins for cleaner visualization
-                bin_indices = range(0, len(bins)-1, 2)  # Take every other bin
+                bin_indices = range(0, len(bins)-1, 2)
                 bin_centers = [(bins[i] + bins[i+1])/2 for i in bin_indices if i+1 < len(bins)]
                 bin_labels = [f"{bins[i]:.1f}-{bins[i+1]:.1f}" for i in bin_indices if i+1 < len(bins)]
-                
-                # Aggregate counts for the reduced bins
                 normal_counts = []
                 anomaly_counts = []
                 for i in bin_indices:
@@ -560,7 +577,6 @@ with tabs[0]:
                             anomaly_counts.append(hist_data['anomaly_counts'][i])
                         else:
                             anomaly_counts.append(0)
-                
                 fig_hist = go.Figure()
                 fig_hist.add_trace(go.Bar(
                     x=bin_centers,
@@ -581,7 +597,7 @@ with tabs[0]:
                     xaxis_title="Anomaly Score",
                     yaxis_title="Count",
                     barmode='group',
-                    height=250,
+                    height=row2_height,
                     margin=dict(l=5, r=5, t=20, b=20),
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
                 )
