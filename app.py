@@ -340,9 +340,9 @@ def run_notebook(phone_number):
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
-analysis_tab2, analysis_tab1 = st.tabs(["🔎 Individual Analysis", "📈 Combined Analysis"])
+analysis_tab1, analysis_tab2 = st.tabs(["📈 Combined Analysis","🔎 Individual Analysis"])
 
-# Tab 1
+# Tab 2
 with analysis_tab2:
     phone_number = st.text_input("Enter Phone Number to Check")
     run_button = st.button("Run Fraud Check", key="run_check_button")
