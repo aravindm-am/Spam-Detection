@@ -409,7 +409,7 @@ st.markdown('''
 <input type="hidden" id="streamlit-viewport-height" value="800" />
 ''', unsafe_allow_html=True)
 
-viewport_height = st.experimental_get_query_params().get('viewport_height', [None])[0]
+viewport_height = st.query_params().get('viewport_height', [None])[0]
 if viewport_height:
     try:
         st.session_state['viewport_height'] = int(viewport_height)
@@ -460,8 +460,8 @@ if 'viewport_width' not in st.session_state:
     st.session_state['viewport_width'] = 1600  # fallback default
 
 # Listen for JS events to update session state
-viewport_height = st.experimental_get_query_params().get('viewport_height', [st.session_state['viewport_height']])[0]
-viewport_width = st.experimental_get_query_params().get('viewport_width', [st.session_state['viewport_width']])[0]
+viewport_height = st.query_params().get('viewport_height', [st.session_state['viewport_height']])[0]
+viewport_width = st.query_params().get('viewport_width', [st.session_state['viewport_width']])[0]
 try:
     st.session_state['viewport_height'] = int(viewport_height)
     st.session_state['viewport_width'] = int(viewport_width)
