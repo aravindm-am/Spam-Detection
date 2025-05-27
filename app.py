@@ -340,10 +340,10 @@ def run_notebook(phone_number):
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
-analysis_tab1, analysis_tab2 = st.tabs(["🔎 Individual Analysis", "📈 Combined Analysis"])
+analysis_tab2, analysis_tab1 = st.tabs(["🔎 Individual Analysis", "📈 Combined Analysis"])
 
 # Tab 1
-with analysis_tab1:
+with analysis_tab2:
     phone_number = st.text_input("Enter Phone Number to Check")
     run_button = st.button("Run Fraud Check", key="run_check_button")
     
@@ -413,7 +413,7 @@ with analysis_tab1:
             st.warning("📱 Please enter a valid phone number.")
 
 # Tab 2
-with analysis_tab2:
+with analysis_tab1:
     # Check if we have a real analysis or should use the hardcoded data
     if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
         shap_data = st.session_state.shap_data
