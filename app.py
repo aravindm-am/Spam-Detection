@@ -472,7 +472,7 @@ except Exception:
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
     # --- Batch scoring UI ---
-    st.markdown("#### Upload a file for batch scoring")
+    st.markdown("#### Upload a file for scoring")
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
     if uploaded_file is not None:
         df_uploaded = pd.read_csv(uploaded_file)        
