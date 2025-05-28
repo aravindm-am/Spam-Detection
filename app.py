@@ -472,12 +472,11 @@ except Exception:
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
     # --- Batch scoring UI ---
-    st.markdown("#### Upload a file with phone numbers for batch scoring")
+    st.markdown("#### Upload a file for scoring")
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
     if uploaded_file is not None:
         df_uploaded = pd.read_csv(uploaded_file)
-        st.write("Preview of uploaded file:")
-        st.dataframe(df_uploaded.head())
+        
         if st.button("Score", key="score_batch_button"):
             # Just run the Databricks notebook (databricks-new.py) and display the JSON output
             headers = {
@@ -574,7 +573,7 @@ with tabs[0]:
                         }
                         </style>
                     """, unsafe_allow_html=True)
-                    st.markdown("#### Prediction Results (Batch)")
+                    st.markdown("#### Prediction Results")
                     st.markdown(result_df.to_html(classes='styled-table', index=False, escape=False), unsafe_allow_html=True)
                 else:
                     st.error(f"❌ Batch job failed or no results: {result_state}")
