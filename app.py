@@ -470,6 +470,79 @@ except Exception:
 
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
+    # --- Batch scoring UI ---
+    st.markdown("#### Upload a file with phone numbers for batch scoring")
+    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
+    if uploaded_file is not None:
+        df_uploaded = pd.read_csv(uploaded_file)
+        st.write("Preview of uploaded file:")
+        st.dataframe(df_uploaded.head())
+        if st.button("Score", key="score_batch_button"):
+            # Save uploaded file to a temp location
+            temp_path = "uploaded_numbers.csv"
+            df_uploaded.to_csv(temp_path, index=False)
+            # Run the batch notebook (databricks-new.py)
+            headers = {
+                "Authorization": f"Bearer {DATABRICKS_TOKEN}",
+                "Content-Type": "application/json"
+            }
+            EXISTING_CLUSTER_ID = "0521-131856-gsh3b6se"
+            batch_notebook_path = DATABRICKS_NOTEBOOK_PATH.replace("databricks.py", "databricks-new.py")
+            submit_payload = {
+                "run_name": f"BatchFraudCheck_{int(time.time())}",
+                "notebook_task": {
+                    "notebook_path": batch_notebook_path,
+                    "base_parameters": {
+                        "input_file": temp_path
+                    }
+                },
+                "existing_cluster_id": EXISTING_CLUSTER_ID        
+            }
+            response = requests.post(
+                f"{DATABRICKS_HOST}/api/2.1/jobs/runs/submit",
+                headers=headers,
+                json=submit_payload
+            )
+            if response.status_code != 200:
+                st.error("❌ Failed to start Databricks batch job.")
+                st.text(response.text)
+            else:
+                run_id = response.json()["run_id"]
+                status_placeholder = st.empty()
+                while True:
+                    status_response = requests.get(
+                        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
+                        headers=headers
+                    )
+                    run_state = status_response.json()["state"]["life_cycle_state"]
+                    if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
+                        break
+                    time.sleep(1)
+                status_placeholder.empty()
+                result = status_response.json()
+                result_state = result.get("state", {}).get("result_state", "UNKNOWN")
+                notebook_output = None
+                if result_state == "SUCCESS":
+                    output_response = requests.get(
+                        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
+                        headers=headers
+                    )
+                    if output_response.status_code == 200:
+                        notebook_result = output_response.json().get("notebook_output", {})
+                        notebook_output = notebook_result.get("result", None)
+                        if isinstance(notebook_output, str):
+                            try:
+                                notebook_output = json.loads(notebook_output)
+                            except:
+                                pass
+                if notebook_output and "results" in notebook_output:
+                    st.success("🎉 Batch scoring complete!")
+                    result_df = pd.DataFrame(notebook_output["results"])
+                    st.markdown("#### Prediction Results (Batch)")
+                    st.dataframe(result_df)
+                else:
+                    st.error(f"❌ Batch job failed or no results: {result_state}")
+    # Always show the hardcoded plots below the upload UI
     # Check if we have a real analysis or should use the hardcoded data
     if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
         shap_data = st.session_state.shap_data
@@ -480,9 +553,6 @@ with tabs[0]:
         combined = HARDCODED_COMBINED_ANALYSIS
         st.info("ℹ️ Displaying pre-computed analysis. Run an individual analysis for real-time data.")
 
-
-    
-    
     # Main container for the combined analysis layout
     with st.container():
         # Calculate available height for plots
