@@ -479,85 +479,65 @@ with tabs[0]:
         st.write("Preview of uploaded file:")
         st.dataframe(df_uploaded.head())
         if st.button("Score", key="score_batch_button"):
-            # Upload the file to the Databricks workspace directory
-            workspace_path = f"/Workspace/Users/aravind.menon@subex.com/Spam Detection/{uploaded_file.name}"
-            file_bytes = uploaded_file.getvalue()
-            upload_url = f"{DATABRICKS_HOST}/api/2.0/workspace/import"
-            upload_resp = requests.post(
-                upload_url,
-                headers={"Authorization": f"Bearer {DATABRICKS_TOKEN}"},
-                files={"file": (uploaded_file.name, file_bytes)},
-                data={
-                    "path": workspace_path,
-                    "format": "AUTO",
-                    "overwrite": "true"
-                }
+            # Just run the Databricks notebook (databricks-new.py) and display the JSON output
+            headers = {
+                "Authorization": f"Bearer {DATABRICKS_TOKEN}",
+                "Content-Type": "application/json"
+            }
+            EXISTING_CLUSTER_ID = "0521-131856-gsh3b6se"
+            batch_notebook_path = DATABRICKS_NOTEBOOK_PATH_BATCH  # Path to databricks-new.py
+            submit_payload = {
+                "run_name": f"BatchFraudCheck_{int(time.time())}",
+                "notebook_task": {
+                    "notebook_path": batch_notebook_path,
+                    "base_parameters": {}  # No need to pass input_file if hardcoded
+                },
+                "existing_cluster_id": EXISTING_CLUSTER_ID        
+            }
+            response = requests.post(
+                f"{DATABRICKS_HOST}/api/2.1/jobs/runs/submit",
+                headers=headers,
+                json=submit_payload
             )
-            if upload_resp.status_code != 200:
-                st.error("Failed to upload file to Databricks workspace.")
-                st.text(upload_resp.text)
+            if response.status_code != 200:
+                st.error("❌ Failed to start Databricks batch job.")
+                st.text(response.text)
             else:
-                st.success("File uploaded to Databricks workspace.")
-                headers = {
-                    "Authorization": f"Bearer {DATABRICKS_TOKEN}",
-                    "Content-Type": "application/json"
-                }
-                EXISTING_CLUSTER_ID = "0521-131856-gsh3b6se"
-                batch_notebook_path = DATABRICKS_NOTEBOOK_PATH_BATCH
-                submit_payload = {
-                    "run_name": f"BatchFraudCheck_{int(time.time())}",
-                    "notebook_task": {
-                        "notebook_path": batch_notebook_path,
-                        "base_parameters": {
-                            "input_file": workspace_path
-                        }
-                    },
-                    "existing_cluster_id": EXISTING_CLUSTER_ID        
-                }
-                response = requests.post(
-                    f"{DATABRICKS_HOST}/api/2.1/jobs/runs/submit",
-                    headers=headers,
-                    json=submit_payload
-                )
-                if response.status_code != 200:
-                    st.error("❌ Failed to start Databricks batch job.")
-                    st.text(response.text)
+                run_id = response.json()["run_id"]
+                status_placeholder = st.empty()
+                while True:
+                    status_response = requests.get(
+                        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
+                        headers=headers
+                    )
+                    run_state = status_response.json()["state"]["life_cycle_state"]
+                    if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
+                        break
+                    time.sleep(1)
+                status_placeholder.empty()
+                result = status_response.json()
+                result_state = result.get("state", {}).get("result_state", "UNKNOWN")
+                notebook_output = None
+                if result_state == "SUCCESS":
+                    output_response = requests.get(
+                        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
+                        headers=headers
+                    )
+                    if output_response.status_code == 200:
+                        notebook_result = output_response.json().get("notebook_output", {})
+                        notebook_output = notebook_result.get("result", None)
+                        if isinstance(notebook_output, str):
+                            try:
+                                notebook_output = json.loads(notebook_output)
+                            except:
+                                pass
+                if notebook_output and "results" in notebook_output:
+                    st.success("🎉 Batch scoring complete!")
+                    result_df = pd.DataFrame(notebook_output["results"])
+                    st.markdown("#### Prediction Results (Batch)")
+                    st.dataframe(result_df)
                 else:
-                    run_id = response.json()["run_id"]
-                    status_placeholder = st.empty()
-                    while True:
-                        status_response = requests.get(
-                            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
-                            headers=headers
-                        )
-                        run_state = status_response.json()["state"]["life_cycle_state"]
-                        if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
-                            break
-                        time.sleep(1)
-                    status_placeholder.empty()
-                    result = status_response.json()
-                    result_state = result.get("state", {}).get("result_state", "UNKNOWN")
-                    notebook_output = None
-                    if result_state == "SUCCESS":
-                        output_response = requests.get(
-                            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
-                            headers=headers
-                        )
-                        if output_response.status_code == 200:
-                            notebook_result = output_response.json().get("notebook_output", {})
-                            notebook_output = notebook_result.get("result", None)
-                            if isinstance(notebook_output, str):
-                                try:
-                                    notebook_output = json.loads(notebook_output)
-                                except:
-                                    pass
-                    if notebook_output and "results" in notebook_output:
-                        st.success("🎉 Batch scoring complete!")
-                        result_df = pd.DataFrame(notebook_output["results"])
-                        st.markdown("#### Prediction Results (Batch)")
-                        st.dataframe(result_df)
-                    else:
-                        st.error(f"❌ Batch job failed or no results: {result_state}")
+                    st.error(f"❌ Batch job failed or no results: {result_state}")
     # Always show the hardcoded plots below the upload UI
     # Check if we have a real analysis or should use the hardcoded data
     if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
