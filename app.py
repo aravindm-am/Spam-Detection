@@ -561,6 +561,17 @@ with tabs[0]:
                         .styled-table tbody tr:last-of-type {
                             border-bottom: 2px solid #007BFF;
                         }
+                        /* Center align 'caller' and 'prediction' columns */
+                        .styled-table td:nth-child(1), /* caller column */
+                        .styled-table th:nth-child(1) {
+                            text-align: center !important;
+                            vertical-align: middle !important;
+                        }
+                        .styled-table td:nth-child(2), /* prediction column */
+                        .styled-table th:nth-child(2) {
+                            text-align: center !important;
+                            vertical-align: middle !important;
+                        }
                         </style>
                     """, unsafe_allow_html=True)
                     st.markdown("#### Prediction Results (Batch)")
