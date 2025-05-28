@@ -472,10 +472,12 @@ except Exception:
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
     # --- Batch scoring UI ---
-    st.markdown("#### Upload a file with for batch scoring")
+    st.markdown("#### Upload a file with phone numbers for batch scoring")
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
     if uploaded_file is not None:
-        df_uploaded = pd.read_csv(uploaded_file)        
+        df_uploaded = pd.read_csv(uploaded_file)
+        st.write("Preview of uploaded file:")
+        st.dataframe(df_uploaded.head())
         if st.button("Score", key="score_batch_button"):
             # Upload the file to the Databricks workspace directory
             workspace_path = f"/Workspace/Users/aravind.menon@subex.com/Spam Detection/{uploaded_file.name}"
