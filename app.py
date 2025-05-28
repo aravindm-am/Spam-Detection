@@ -479,7 +479,8 @@ with tabs[0]:
         st.write("Preview of uploaded file:")
         st.dataframe(df_uploaded.head())
         if st.button("Score", key="score_batch_button"):
-            temp_path = "uploaded_numbers.csv"
+            # Use the uploaded file's name for temp_path
+            temp_path = uploaded_file.name
             df_uploaded.to_csv(temp_path, index=False)
             headers = {
                 "Authorization": f"Bearer {DATABRICKS_TOKEN}",
