@@ -294,6 +294,7 @@ DATABRICKS_HOST = st.secrets["databricks_host"]
 DATABRICKS_PATH = st.secrets["databricks_http_path"]
 DATABRICKS_TOKEN = st.secrets["databricks_token"]
 DATABRICKS_NOTEBOOK_PATH = st.secrets["databricks_notebook_path"]
+DATABRICKS_NOTEBOOK_PATH_BATCH = st.secrets["databricks_notebook_path_batch"]
 
 @st.cache_resource
 def get_connection():
@@ -327,7 +328,7 @@ def run_notebook(phone_number):
     submit_payload = {
         "run_name": f"FraudCheck_{phone_number}",
         "notebook_task": {
-            "notebook_path": DATABRICKS_NOTEBOOK_PATH,
+            "notebook_path": DATABRICKS_NOTEBOOK_PATH,  # Use individual notebook path from secrets
             "base_parameters": {
                 "phone_number": phone_number
             }
@@ -478,16 +479,14 @@ with tabs[0]:
         st.write("Preview of uploaded file:")
         st.dataframe(df_uploaded.head())
         if st.button("Score", key="score_batch_button"):
-            # Save uploaded file to a temp location
             temp_path = "uploaded_numbers.csv"
             df_uploaded.to_csv(temp_path, index=False)
-            # Run the batch notebook (databricks-new.py)
             headers = {
                 "Authorization": f"Bearer {DATABRICKS_TOKEN}",
                 "Content-Type": "application/json"
             }
             EXISTING_CLUSTER_ID = "0521-131856-gsh3b6se"
-            batch_notebook_path = DATABRICKS_NOTEBOOK_PATH.replace("databricks.py", "databricks-new.py")
+            batch_notebook_path = DATABRICKS_NOTEBOOK_PATH_BATCH  # Use batch notebook path from secrets
             submit_payload = {
                 "run_name": f"BatchFraudCheck_{int(time.time())}",
                 "notebook_task": {
