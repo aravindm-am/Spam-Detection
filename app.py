@@ -472,11 +472,12 @@ except Exception:
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
     # --- Batch scoring UI ---
-    st.markdown("#### Upload a file for scoring")
+    st.markdown("#### Upload a file with phone numbers for batch scoring")
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
     if uploaded_file is not None:
-        df_uploaded = pd.read_csv(uploaded_file)        
-        
+        df_uploaded = pd.read_csv(uploaded_file)
+        st.write("Preview of uploaded file:")
+        st.dataframe(df_uploaded.head())
         if st.button("Score", key="score_batch_button"):
             # Just run the Databricks notebook (databricks-new.py) and display the JSON output
             headers = {
@@ -531,10 +532,39 @@ with tabs[0]:
                             except:
                                 pass
                 if notebook_output and "results" in notebook_output:
-                    st.success("🎉 Scoring complete!")
+                    st.success("🎉 Batch scoring complete!")
                     result_df = pd.DataFrame(notebook_output["results"])
-                    st.markdown("#### Prediction Results")
-                    st.dataframe(result_df)
+                    st.markdown("""
+                        <style>
+                        .styled-table {
+                            border-collapse: collapse;
+                            margin: 20px 0;
+                            font-size: 1.1em;
+                            font-family: 'Segoe UI', Arial, sans-serif;
+                            min-width: 400px;
+                            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+                        }
+                        .styled-table thead tr {
+                            background-color: #007BFF;
+                            color: #ffffff;
+                            text-align: left;
+                        }
+                        .styled-table th, .styled-table td {
+                            padding: 12px 18px;
+                        }
+                        .styled-table tbody tr {
+                            border-bottom: 1px solid #dddddd;
+                        }
+                        .styled-table tbody tr:nth-of-type(even) {
+                            background-color: #f3f3f3;
+                        }
+                        .styled-table tbody tr:last-of-type {
+                            border-bottom: 2px solid #007BFF;
+                        }
+                        </style>
+                    """, unsafe_allow_html=True)
+                    st.markdown("#### Prediction Results (Batch)")
+                    st.markdown(result_df.to_html(classes='styled-table', index=False, escape=False), unsafe_allow_html=True)
                 else:
                     st.error(f"❌ Batch job failed or no results: {result_state}")
     # Always show the hardcoded plots below the upload UI
