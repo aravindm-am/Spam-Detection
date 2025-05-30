@@ -12,47 +12,98 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
-# Apply custom CSS to left-align the app and optimize layout
-st.markdown("""
+# --- Custom CSS for beautification ---
+st.markdown('''
 <style>
-    html, body, .block-container {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-    }
-    .block-container {
-        padding-top: 0.5rem !important;
-        padding-right: 1rem !important;
-        padding-left: 1rem !important;
-        padding-bottom: 0.5rem !important;
-    }
-    .stPlotlyChart {
-        margin-bottom: 0 !important;
-    }
-    /* Remove Streamlit's default centering and width restrictions */
-    [data-testid="stAppViewContainer"] > .main {
-        max-width: 100vw !important;
-        width: 100vw !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-    [data-testid="stHeader"] {
-        max-width: 100vw !important;
-        width: 100vw !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    [data-testid="stSidebar"] {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
+body, .main, .block-container {
+    background: #f7f9fb !important;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+/* Card-like containers */
+.stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
+    background: #fff !important;
+    border-radius: 18px !important;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
+    padding: 24px 24px 16px 24px !important;
+    margin-bottom: 18px !important;
+}
+
+/* Section headers */
+h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+    color: #1a237e !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+}
+
+/* Buttons */
+.stButton > button {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    padding: 0.6em 2em !important;
+    box-shadow: 0 2px 8px 0 rgba(0,123,255,0.08) !important;
+    transition: background 0.2s;
+}
+.stButton > button:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
+}
+
+/* File uploader */
+.stFileUploader, .stFileUploader label {
+    background: #f0f4fa !important;
+    border-radius: 10px !important;
+    border: 1.5px solid #e3e8f0 !important;
+    padding: 1em !important;
+    color: #1a237e !important;
+    font-weight: 500 !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab"] {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1a237e !important;
+    background: #e3e8f0 !important;
+    border-radius: 8px 8px 0 0 !important;
+    margin-right: 4px !important;
+}
+.stTabs [aria-selected="true"] {
+    background: #fff !important;
+    color: #007BFF !important;
+    border-bottom: 2.5px solid #007BFF !important;
+}
+
+/* Info/success/warning banners */
+.stAlert {
+    border-radius: 10px !important;
+    font-size: 1.05rem !important;
+}
+
+/* Pie/Bar/Plotly chart container tweaks */
+.stPlotlyChart, .stPlotlyChart > div {
+    background: #fff !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
+    padding: 8px !important;
+}
+
+/* Input fields */
+.stTextInput > div > input {
+    border-radius: 8px !important;
+    border: 1.5px solid #e3e8f0 !important;
+    background: #f0f4fa !important;
+    font-size: 1.08rem !important;
+    padding: 0.5em 1em !important;
+}
+
+/* Hide Streamlit default hamburger and footer */
+#MainMenu, footer {visibility: hidden;}
 </style>
-""", unsafe_allow_html=True)
+''', unsafe_allow_html=True)
 
 # Hardcoded combined analysis data to avoid running analysis every time
 HARDCODED_COMBINED_ANALYSIS = {
@@ -383,6 +434,7 @@ def run_notebook(phone_number):
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
+st.markdown("<span style='font-size:1.25rem;color:#374151;font-weight:500;'>AI-powered, real-time fraud detection for telecom businesses. Upload your data or check a number for instant insights.</span>", unsafe_allow_html=True)
 
 # Change the order of tabs - Combined Analysis first, Individual Analysis second
 tabs = st.tabs(["📊 Combined Analysis", "🔎 Individual Analysis"])
@@ -472,11 +524,11 @@ except Exception:
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
     # --- Batch scoring UI ---
-    st.markdown("#### Upload a file for scoring")
+    st.markdown("#### <span style='color:#007BFF;'>Upload a file for scoring</span>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
     if uploaded_file is not None:
         df_uploaded = pd.read_csv(uploaded_file)
-        
+        st.success("✅ File uploaded! Click 'Score' to analyze.")
         if st.button("Score", key="score_batch_button"):
             # Just run the Databricks notebook (databricks-new.py) and display the JSON output
             headers = {
@@ -603,7 +655,7 @@ with tabs[0]:
         row1_col1, row1_col2, row1_col3 = st.columns(3, gap="medium")
         with row1_col1:
             if 'global_feature_importance' in combined:
-                st.markdown("#### 📊 Global SHAP Feature Importance")
+                st.markdown("#### <span style='color:#007BFF;'>📊 Global SHAP Feature Importance</span>", unsafe_allow_html=True)
                 global_importance_df = pd.DataFrame({
                     'Feature': list(combined['global_feature_importance'].keys()),
                     'Importance': list(combined['global_feature_importance'].values())
@@ -628,7 +680,7 @@ with tabs[0]:
     
         with row1_col2:
             if 'prediction_distribution' in combined:
-                st.markdown("#### 🔄 Prediction Distribution")
+                st.markdown("#### <span style='color:#007BFF;'>🔄 Prediction Distribution</span>", unsafe_allow_html=True)
                 labels = list(combined['prediction_distribution'].keys())
                 values = list(combined['prediction_distribution'].values())
                 fig_pie = px.pie(
@@ -650,7 +702,7 @@ with tabs[0]:
     
         with row1_col3:
             if 'correlation_matrix' in combined:
-                st.markdown("#### 🔄 Correlation Matrix")
+                st.markdown("#### <span style='color:#007BFF;'>🔄 Correlation Matrix</span>", unsafe_allow_html=True)
                 important_features = ["short_call_ratio", "mean_duration", "pct_daytime", "pct_weekend"]
                 filtered_corr = {k: {k2: v2 for k2, v2 in v.items() if k2 in important_features} 
                                 for k, v in combined['correlation_matrix'].items() 
@@ -674,7 +726,7 @@ with tabs[0]:
         row2_col1, row2_col2 = st.columns(2)
         with row2_col1:
             if 'feature_distributions' in combined:
-                st.markdown("#### 📈 Feature Distribution")
+                st.markdown("#### <span style='color:#007BFF;'>📈 Feature Distribution</span>", unsafe_allow_html=True)
                 feature_options = list(combined['feature_distributions'].keys())
                 select_feature = st.selectbox(
                     "Select feature:", 
@@ -714,7 +766,7 @@ with tabs[0]:
                 st.warning("Feature distribution data not available.")
         with row2_col2:
             if 'anomaly_score_distribution' in combined:
-                st.markdown("#### 🔔 Anomaly Score Distribution")
+                st.markdown("#### <span style='color:#007BFF;'>🔔 Anomaly Score Distribution</span>", unsafe_allow_html=True)
                 hist_data = combined['anomaly_score_distribution']['histogram_data']
                 bins = hist_data['bins']
                 bin_indices = range(0, len(bins)-1, 2)
@@ -762,6 +814,7 @@ with tabs[0]:
 
 # Tab 2: Individual Analysis (now second)
 with tabs[1]:
+    st.markdown("#### <span style='color:#007BFF;'>Check a Phone Number for Fraud</span>", unsafe_allow_html=True)
     phone_number = st.text_input("Enter Phone Number to Check")
     run_button = st.button("Run Fraud Check", key="run_check_button")
     
@@ -775,12 +828,11 @@ with tabs[1]:
                     st.session_state.shap_data = shap_data
 
                     st.subheader("📞 Prediction Summary")
-                    st.markdown(f"**Phone Number**: `{phone_number}`")
-                    st.markdown(f"**Prediction**: `{shap_data['prediction']}`")
-                    st.markdown(f"**Anomaly Score**: `{shap_data['anomaly_score']:.4f}`")
-
+                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Phone Number</b>: <code>{phone_number}</code></span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Prediction</b>: <code>{shap_data['prediction']}</code></span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Anomaly Score</b>: <code>{shap_data['anomaly_score']:.4f}</code></span>", unsafe_allow_html=True)
                     if 'explanation' in shap_data and shap_data['explanation']:
-                        st.markdown(f"**AI Explanation**: {shap_data['explanation']}")
+                        st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>AI Explanation</b>: {shap_data['explanation']}</span>", unsafe_allow_html=True)
 
                     feature_importance_df = pd.DataFrame({
                         'Feature': list(shap_data['feature_importance'].keys()),
@@ -794,7 +846,7 @@ with tabs[1]:
                     tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
 
                     with tab1:
-                        st.markdown("### 📊 Individual Feature Importance")
+                        st.markdown("### <span style='color:#007BFF;'>📊 Individual Feature Importance</span>", unsafe_allow_html=True)
                         fig_importance = px.bar(
                             feature_importance_df, 
                             x='Importance', 
