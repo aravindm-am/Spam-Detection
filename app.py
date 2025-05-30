@@ -90,6 +90,17 @@ section.main { padding-top: 0 !important; }
     margin-bottom: 18px !important;
 }
 
+/* Remove empty card/box below tabs */
+.stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
 /* Section headers */
 h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
     color: #1a237e !important;
