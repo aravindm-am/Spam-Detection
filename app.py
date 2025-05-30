@@ -443,7 +443,6 @@ def run_notebook(phone_number):
 
 # Streamlit UI
 st.title("📞 Telecom Fraud Detection")
-st.markdown("<span style='font-size:1.25rem;color:#374151;font-weight:500;'>AI-powered, real-time fraud detection for telecom businesses. Upload your data or check a number for instant insights.</span>", unsafe_allow_html=True)
 
 # Change the order of tabs - Combined Analysis first, Individual Analysis second
 tabs = st.tabs(["📊 Combined Analysis", "🔎 Individual Analysis"])
