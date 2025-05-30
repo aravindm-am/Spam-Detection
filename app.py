@@ -904,16 +904,19 @@ with tabs[1]:
 
                     with tab1:
                         st.markdown("### <span style='color:#007BFF;'>📊 Individual Feature Importance</span>", unsafe_allow_html=True)
-                        fig_importance = px.bar(
-                            feature_importance_df, 
-                            x='Importance', 
-                            y='Feature', 
-                            orientation='h',
-                            title='Individual Feature Importance',
-                            color='Importance',
-                            color_continuous_scale='Blues'
-                        )
-                        st.plotly_chart(fig_importance, use_container_width=True)
+                        if not feature_importance_df.empty:
+                            fig_importance = px.bar(
+                                feature_importance_df, 
+                                x='Importance', 
+                                y='Feature', 
+                                orientation='h',
+                                title='Individual Feature Importance',
+                                color='Importance',
+                                color_continuous_scale='Blues'
+                            )
+                            st.plotly_chart(fig_importance, use_container_width=True)
+                        else:
+                            st.info('No feature importance data available for this prediction.')
 
                     with tab2:
                         fig_waterfall = go.Figure(go.Waterfall(
