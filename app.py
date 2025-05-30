@@ -12,9 +12,19 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
-# --- Custom CSS for beautification ---
+# --- Custom CSS for full-width layout and removing centering ---
 st.markdown('''
 <style>
+/* Remove Streamlit's default max-width and centering */
+section.main > div { max-width: 100vw !important; padding-left: 0 !important; padding-right: 0 !important; }
+.block-container { max-width: 100vw !important; padding-left: 2vw !important; padding-right: 2vw !important; }
+
+/* Remove any centering on the main container */
+.css-18e3th9 { align-items: stretch !important; }
+
+/* Remove Databricks connection widget (success box at top) */
+.stAlert:first-child { display: none !important; }
+
 body, .main, .block-container {
     background: #f7f9fb !important;
     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
