@@ -20,7 +20,48 @@ st.markdown('''
 section.main { padding-top: 0 !important; }
 </style>
 ''', unsafe_allow_html=True)
-st.title("📞 Telecom Fraud Detection")
+
+# --- Custom header with image on the right ---
+st.markdown('''
+<div class="custom-header-box">
+  <div class="custom-header-title">
+    <span style="font-size:2.8rem;font-weight:800;color:#1a237e;vertical-align:middle;">📞 Telecom Fraud Detection</span>
+  </div>
+  <div class="custom-header-img">
+    <img src="https://passionateaboutoss.com/directory/wp-content/uploads/2019/09/Subex_logo_png-397112561.png" alt="Telecom Logo" style="height:64px;width:auto;object-fit:contain;" />
+  </div>
+</div>
+<style>
+.custom-header-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f7f9fb;
+  border-radius: 24px;
+  box-shadow: 0 2px 12px rgba(30, 34, 90, 0.07);
+  padding: 32px 40px 24px 32px;
+  margin-bottom: 18px;
+  margin-top: 0;
+  min-height: 80px;
+}
+.custom-header-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.custom-header-img {
+  flex-shrink: 0;
+  margin-left: 32px;
+  display: flex;
+  align-items: center;
+  height: 64px;
+}
+@media (max-width: 700px) {
+  .custom-header-box { flex-direction: column; align-items: flex-start; padding: 18px 12px 12px 12px; }
+  .custom-header-img { margin-left: 0; margin-top: 12px; }
+}
+</style>
+''', unsafe_allow_html=True)
 
 # --- Custom CSS for full-width layout, removing centering, and reducing top spacing ---
 st.markdown('''
