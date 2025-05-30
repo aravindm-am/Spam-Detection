@@ -26,8 +26,9 @@ body, .main, .block-container {
     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
 
-/* Reduce top margin before the title */
-.block-container { margin-top: 10px !important; }
+/* Remove blank spaces before the title */
+.block-container { margin-top: 0 !important; }
+section.main { padding-top: 0 !important; }
 
 /* Card-like containers */
 .stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
@@ -442,6 +443,13 @@ def run_notebook(phone_number):
     return result_state, notebook_output
 
 # Streamlit UI
+# Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
+st.markdown('''
+<style>
+.block-container { margin-top: 0 !important; }
+section.main { padding-top: 0 !important; }
+</style>
+''', unsafe_allow_html=True)
 st.title("📞 Telecom Fraud Detection")
 
 # Change the order of tabs - Combined Analysis first, Individual Analysis second
