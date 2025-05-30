@@ -593,48 +593,22 @@ with tabs[0]:
                 if notebook_output and "results" in notebook_output:
                     st.success("🎉 Batch scoring complete!")
                     result_df = pd.DataFrame(notebook_output["results"])
-                    st.markdown("""
-                        <style>
-                        .styled-table {
-                            border-collapse: collapse;
-                            margin: 20px 0;
-                            font-size: 1.1em;
-                            font-family: 'Segoe UI', Arial, sans-serif;
-                            min-width: 400px;
-                            box-shadow: 0 0 10px rgba(0,0,0,0.08);
-                        }
-                        .styled-table thead tr {
-                            background-color: #007BFF;
-                            color: #ffffff;
-                            text-align: left;
-                        }
-                        .styled-table th, .styled-table td {
-                            padding: 12px 18px;
-                        }
-                        .styled-table tbody tr {
-                            border-bottom: 1px solid #dddddd;
-                        }
-                        .styled-table tbody tr:nth-of-type(even) {
-                            background-color: #f3f3f3;
-                        }
-                        .styled-table tbody tr:last-of-type {
-                            border-bottom: 2px solid #007BFF;
-                        }
-                        /* Center align 'caller' and 'prediction' columns */
-                        .styled-table td:nth-child(1), /* caller column */
-                        .styled-table th:nth-child(1) {
-                            text-align: center !important;
-                            vertical-align: middle !important;
-                        }
-                        .styled-table td:nth-child(2), /* prediction column */
-                        .styled-table th:nth-child(2) {
-                            text-align: center !important;
-                            vertical-align: middle !important;
-                        }
-                        </style>
-                    """, unsafe_allow_html=True)
-                    st.markdown("#### Prediction Results")
-                    st.markdown(result_df.to_html(classes='styled-table', index=False, escape=False), unsafe_allow_html=True)
+                    # Style Anomaly rows in red
+                    def highlight_anomaly(val, pred):
+                        if pred == "Anomaly":
+                            return 'color: #FF4B4B; font-weight: 600;'
+                        return ''
+                    def style_row(row):
+                        style_caller = highlight_anomaly(row['caller'], row['prediction'])
+                        style_pred = highlight_anomaly(row['caller'], row['prediction'])
+                        return [style_caller, style_pred]
+                    if 'caller' in result_df.columns and 'prediction' in result_df.columns:
+                        styled_df = result_df.style.apply(lambda row: style_row(row), axis=1)
+                        st.markdown("#### Prediction Results")
+                        st.write(styled_df.to_html(escape=False, index=False), unsafe_allow_html=True)
+                    else:
+                        st.markdown("#### Prediction Results")
+                        st.write(result_df)
                 else:
                     st.error(f"❌ Batch job failed or no results: {result_state}")
     # Always show the hardcoded plots below the upload UI
