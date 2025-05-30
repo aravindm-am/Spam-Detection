@@ -663,7 +663,7 @@ with tabs[0]:
         row1_col1, row1_col2, row1_col3 = st.columns(3, gap="medium")
         with row1_col1:
             if 'global_feature_importance' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>📊 Global SHAP Feature Importance</span>", unsafe_allow_html=True)
+                st.markdown("#### <span style='color:#007BFF;'>📊 Top Indicators of Fraudulent Activity</span>", unsafe_allow_html=True)
                 global_importance_df = pd.DataFrame({
                     'Feature': list(combined['global_feature_importance'].keys()),
                     'Importance': list(combined['global_feature_importance'].values())
@@ -688,7 +688,7 @@ with tabs[0]:
     
         with row1_col2:
             if 'prediction_distribution' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>🔄 Prediction Distribution</span>", unsafe_allow_html=True)
+                st.markdown("#### <span style='color:#007BFF;'>🔄 Fraud vs. Normal Call Distribution</span>", unsafe_allow_html=True)
                 labels = list(combined['prediction_distribution'].keys())
                 values = list(combined['prediction_distribution'].values())
                 fig_pie = px.pie(
@@ -710,7 +710,7 @@ with tabs[0]:
     
         with row1_col3:
             if 'correlation_matrix' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>🔄 Correlation Matrix</span>", unsafe_allow_html=True)
+                st.markdown("#### <span style='color:#007BFF;'>🔄 Correlated Call Patterns in Risk Profiles</span>", unsafe_allow_html=True)
                 important_features = ["short_call_ratio", "mean_duration", "pct_daytime", "pct_weekend"]
                 filtered_corr = {k: {k2: v2 for k2, v2 in v.items() if k2 in important_features} 
                                 for k, v in combined['correlation_matrix'].items() 
@@ -734,7 +734,7 @@ with tabs[0]:
         row2_col1, row2_col2 = st.columns(2)
         with row2_col1:
             if 'feature_distributions' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>📈 Feature Distribution</span>", unsafe_allow_html=True)
+                st.markdown("#### <span style='color:#007BFF;'>📈 Spotting Risk Through Call Behavior</span>", unsafe_allow_html=True)
                 feature_options = list(combined['feature_distributions'].keys())
                 select_feature = st.selectbox(
                     "Select feature:", 
@@ -774,7 +774,7 @@ with tabs[0]:
                 st.warning("Feature distribution data not available.")
         with row2_col2:
             if 'anomaly_score_distribution' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>🔔 Anomaly Score Distribution</span>", unsafe_allow_html=True)
+                st.markdown("#### <span style='color:#007BFF;'>🔔 Likelihood of Fraud Across Users</span>", unsafe_allow_html=True)
                 hist_data = combined['anomaly_score_distribution']['histogram_data']
                 bins = hist_data['bins']
                 bin_indices = range(0, len(bins)-1, 2)
