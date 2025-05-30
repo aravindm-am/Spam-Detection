@@ -12,6 +12,16 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
+# Streamlit UI
+# Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
+st.markdown('''
+<style>
+.block-container { margin-top: 0 !important; }
+section.main { padding-top: 0 !important; }
+</style>
+''', unsafe_allow_html=True)
+st.title("📞 Telecom Fraud Detection")
+
 # --- Custom CSS for full-width layout, removing centering, and reducing top spacing ---
 st.markdown('''
 <style>
@@ -442,15 +452,15 @@ def run_notebook(phone_number):
 
     return result_state, notebook_output
 
-# Streamlit UI
-# Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
-st.markdown('''
-<style>
-.block-container { margin-top: 0 !important; }
-section.main { padding-top: 0 !important; }
-</style>
-''', unsafe_allow_html=True)
-st.title("📞 Telecom Fraud Detection")
+# # Streamlit UI
+# # Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
+# st.markdown('''
+# <style>
+# .block-container { margin-top: 0 !important; }
+# section.main { padding-top: 0 !important; }
+# </style>
+# ''', unsafe_allow_html=True)
+# st.title("📞 Telecom Fraud Detection")
 
 # Change the order of tabs - Combined Analysis first, Individual Analysis second
 tabs = st.tabs(["📊 Combined Analysis", "🔎 Individual Analysis"])
