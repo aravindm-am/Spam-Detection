@@ -767,7 +767,7 @@ with tabs[1]:
     
     if run_button:
         if phone_number.strip():
-            with st.spinner("Subex Spam Scoring Started in Databricks..."):
+            with st.spinner("Subex Spam Scoring Started..."):
                 result, notebook_output = run_notebook(phone_number.strip())
                 if result == "SUCCESS":
                     st.success("🎉 Analysis complete!")
