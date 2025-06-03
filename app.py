@@ -12,170 +12,212 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
-# Streamlit UI
-# Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
-st.markdown('''
+# # Streamlit UI
+# # Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
+# st.markdown('''
+# <style>
+# .block-container { margin-top: 0 !important; }
+# section.main { padding-top: 0 !important; }
+# </style>
+# ''', unsafe_allow_html=True)
+
+# # --- Custom header with image on the right ---
+# st.markdown('''
+# <div class="custom-header-box">
+#   <div class="custom-header-title">
+#     <span style="font-size:2.8rem;font-weight:800;color:#1a237e;vertical-align:middle;">📞 Telecom Fraud Detection</span>
+#   </div>
+#   <div class="custom-header-img">
+#     <img src="https://passionateaboutoss.com/directory/wp-content/uploads/2019/09/Subex_logo_png-397112561.png" alt="Telecom Logo" style="height:64px;width:auto;object-fit:contain;" />
+#   </div>
+# </div>
+# <style>
+# .custom-header-box {
+#   display: flex;
+#   align-items: center;
+#   justify-content: space-between;
+#   background: #f7f9fb;
+#   border-radius: 24px;
+#   box-shadow: 0 2px 12px rgba(30, 34, 90, 0.07);
+#   padding: 32px 40px 24px 32px;
+#   margin-bottom: 18px;
+#   margin-top: 0;
+#   min-height: 80px;
+# }
+# .custom-header-title {
+#   flex: 1;
+#   display: flex;
+#   align-items: center;
+# }
+# .custom-header-img {
+#   flex-shrink: 0;
+#   margin-left: 32px;
+#   display: flex;
+#   align-items: center;
+#   height: 64px;
+# }
+# @media (max-width: 700px) {
+#   .custom-header-box { flex-direction: column; align-items: flex-start; padding: 18px 12px 12px 12px; }
+#   .custom-header-img { margin-left: 0; margin-top: 12px; }
+# }
+# </style>
+# ''', unsafe_allow_html=True)
+
+# # --- Custom CSS for full-width layout, removing centering, and reducing top spacing ---
+# st.markdown('''
+# <style>
+# /* Remove Streamlit's default max-width and centering */
+# section.main > div { max-width: 100vw !important; padding-left: 0 !important; padding-right: 0 !important; }
+# .block-container { max-width: 100vw !important; padding-left: 2vw !important; padding-right: 2vw !important; }
+# .css-18e3th9 { align-items: stretch !important; }
+# .stAlert:first-child { display: none !important; }
+
+# body, .main, .block-container {
+#     background: #f7f9fb !important;
+#     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+# }
+
+# /* Remove blank spaces before the title */
+# .block-container { margin-top: 0 !important; }
+# section.main { padding-top: 0 !important; }
+
+# /* Card-like containers */
+# .stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
+#     background: #fff !important;
+#     border-radius: 18px !important;
+#     box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
+#     padding: 24px 24px 16px 24px !important;
+#     margin-bottom: 18px !important;
+# }
+
+# /* Remove empty card/box below tabs */
+# .stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
+#     display: none !important;
+#     height: 0 !important;
+#     min-height: 0 !important;
+#     margin: 0 !important;
+#     padding: 0 !important;
+#     border: none !important;
+#     box-shadow: none !important;
+# }
+
+# /* Section headers */
+# h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+#     color: #1a237e !important;
+#     font-weight: 700 !important;
+#     letter-spacing: 0.5px;
+# }
+
+# /* Buttons */
+# .stButton > button {
+#     background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%) !important;
+#     color: #fff !important;
+#     border: none !important;
+#     border-radius: 8px !important;
+#     font-size: 1.1rem !important;
+#     font-weight: 600 !important;
+#     padding: 0.6em 2em !important;
+#     box-shadow: 0 2px 8px 0 rgba(0,123,255,0.08) !important;
+#     transition: background 0.2s;
+# }
+# .stButton > button:hover {
+#     background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
+# }
+
+# /* File uploader */
+# .stFileUploader, .stFileUploader label {
+#     background: #f0f4fa !important;
+#     border-radius: 10px !important;
+#     border: 1.5px solid #e3e8f0 !important;
+#     padding: 1em !important;
+#     color: #1a237e !important;
+#     font-weight: 500 !important;
+# }
+
+# /* Tabs */
+# .stTabs [data-baseweb="tab"] {
+#     font-size: 1.1rem !important;
+#     font-weight: 600 !important;
+#     color: #1a237e !important;
+#     background: #e3e8f0 !important;
+#     border-radius: 8px 8px 0 0 !important;
+#     margin-right: 4px !important;
+# }
+# .stTabs [aria-selected="true"] {
+#     background: #fff !important;
+#     color: #007BFF !important;
+#     border-bottom: 2.5px solid #007BFF !important;
+# }
+
+# /* Info/success/warning banners */
+# .stAlert {
+#     border-radius: 10px !important;
+#     font-size: 1.05rem !important;
+# }
+
+# /* Pie/Bar/Plotly chart container tweaks */
+# .stPlotlyChart, .stPlotlyChart > div {
+#     background: #fff !important;
+#     border-radius: 14px !important;
+#     box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
+#     padding: 8px !important;
+# }
+
+# /* Input fields */
+# .stTextInput > div > input {
+#     border-radius: 8px !important;
+#     border: 1.5px solid #e3e8f0 !important;
+#     background: #f0f4fa !important;
+#     font-size: 1.08rem !important;
+#     padding: 0.5em 1em !important;
+# }
+
+# /* Hide Streamlit default hamburger and footer */
+# #MainMenu, footer {visibility: hidden;}
+# </style>
+# ''', unsafe_allow_html=True)
+
+# Apply custom CSS to left-align the app and optimize layout
+st.markdown("""
 <style>
-.block-container { margin-top: 0 !important; }
-section.main { padding-top: 0 !important; }
+    html, body, .block-container {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+    .block-container {
+        padding-top: 0.5rem !important;
+        padding-right: 1rem !important;
+        padding-left: 1rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    .stPlotlyChart {
+        margin-bottom: 0 !important;
+    }
+    /* Remove Streamlit's default centering and width restrictions */
+    [data-testid="stAppViewContainer"] > .main {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    [data-testid="stHeader"] {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    [data-testid="stSidebar"] {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
 </style>
-''', unsafe_allow_html=True)
-
-# --- Custom header with image on the right ---
-st.markdown('''
-<div class="custom-header-box">
-  <div class="custom-header-title">
-    <span style="font-size:2.8rem;font-weight:800;color:#1a237e;vertical-align:middle;">📞 Telecom Fraud Detection</span>
-  </div>
-  <div class="custom-header-img">
-    <img src="https://passionateaboutoss.com/directory/wp-content/uploads/2019/09/Subex_logo_png-397112561.png" alt="Telecom Logo" style="height:64px;width:auto;object-fit:contain;" />
-  </div>
-</div>
-<style>
-.custom-header-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f7f9fb;
-  border-radius: 24px;
-  box-shadow: 0 2px 12px rgba(30, 34, 90, 0.07);
-  padding: 32px 40px 24px 32px;
-  margin-bottom: 18px;
-  margin-top: 0;
-  min-height: 80px;
-}
-.custom-header-title {
-  flex: 1;
-  display: flex;
-  align-items: center;
-}
-.custom-header-img {
-  flex-shrink: 0;
-  margin-left: 32px;
-  display: flex;
-  align-items: center;
-  height: 64px;
-}
-@media (max-width: 700px) {
-  .custom-header-box { flex-direction: column; align-items: flex-start; padding: 18px 12px 12px 12px; }
-  .custom-header-img { margin-left: 0; margin-top: 12px; }
-}
-</style>
-''', unsafe_allow_html=True)
-
-# --- Custom CSS for full-width layout, removing centering, and reducing top spacing ---
-st.markdown('''
-<style>
-/* Remove Streamlit's default max-width and centering */
-section.main > div { max-width: 100vw !important; padding-left: 0 !important; padding-right: 0 !important; }
-.block-container { max-width: 100vw !important; padding-left: 2vw !important; padding-right: 2vw !important; }
-.css-18e3th9 { align-items: stretch !important; }
-.stAlert:first-child { display: none !important; }
-
-body, .main, .block-container {
-    background: #f7f9fb !important;
-    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-}
-
-/* Remove blank spaces before the title */
-.block-container { margin-top: 0 !important; }
-section.main { padding-top: 0 !important; }
-
-/* Card-like containers */
-.stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
-    background: #fff !important;
-    border-radius: 18px !important;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
-    padding: 24px 24px 16px 24px !important;
-    margin-bottom: 18px !important;
-}
-
-/* Remove empty card/box below tabs */
-.stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
-    display: none !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Section headers */
-h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-    color: #1a237e !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.5px;
-}
-
-/* Buttons */
-.stButton > button {
-    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%) !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    padding: 0.6em 2em !important;
-    box-shadow: 0 2px 8px 0 rgba(0,123,255,0.08) !important;
-    transition: background 0.2s;
-}
-.stButton > button:hover {
-    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
-}
-
-/* File uploader */
-.stFileUploader, .stFileUploader label {
-    background: #f0f4fa !important;
-    border-radius: 10px !important;
-    border: 1.5px solid #e3e8f0 !important;
-    padding: 1em !important;
-    color: #1a237e !important;
-    font-weight: 500 !important;
-}
-
-/* Tabs */
-.stTabs [data-baseweb="tab"] {
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    color: #1a237e !important;
-    background: #e3e8f0 !important;
-    border-radius: 8px 8px 0 0 !important;
-    margin-right: 4px !important;
-}
-.stTabs [aria-selected="true"] {
-    background: #fff !important;
-    color: #007BFF !important;
-    border-bottom: 2.5px solid #007BFF !important;
-}
-
-/* Info/success/warning banners */
-.stAlert {
-    border-radius: 10px !important;
-    font-size: 1.05rem !important;
-}
-
-/* Pie/Bar/Plotly chart container tweaks */
-.stPlotlyChart, .stPlotlyChart > div {
-    background: #fff !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
-    padding: 8px !important;
-}
-
-/* Input fields */
-.stTextInput > div > input {
-    border-radius: 8px !important;
-    border: 1.5px solid #e3e8f0 !important;
-    background: #f0f4fa !important;
-    font-size: 1.08rem !important;
-    padding: 0.5em 1em !important;
-}
-
-/* Hide Streamlit default hamburger and footer */
-#MainMenu, footer {visibility: hidden;}
-</style>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Hardcoded combined analysis data to avoid running analysis every time
 HARDCODED_COMBINED_ANALYSIS = {
