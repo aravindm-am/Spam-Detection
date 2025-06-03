@@ -124,30 +124,30 @@ h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
     background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
 }
 
-# /* File uploader */
-# .stFileUploader, .stFileUploader label {
-#     background: #f0f4fa !important;
-#     border-radius: 10px !important;
-#     border: 1.5px solid #e3e8f0 !important;
-#     padding: 1em !important;
-#     color: #1a237e !important;
-#     font-weight: 500 !important;
-# }
+/* File uploader */
+.stFileUploader, .stFileUploader label {
+    background: #f0f4fa !important;
+    border-radius: 10px !important;
+    border: 1.5px solid #e3e8f0 !important;
+    padding: 1em !important;
+    color: #1a237e !important;
+    font-weight: 500 !important;
+}
 
-# /* Tabs */
-# .stTabs [data-baseweb="tab"] {
-#     font-size: 1.1rem !important;
-#     font-weight: 600 !important;
-#     color: #1a237e !important;
-#     background: #e3e8f0 !important;
-#     border-radius: 8px 8px 0 0 !important;
-#     margin-right: 4px !important;
-# }
-# .stTabs [aria-selected="true"] {
-#     background: #fff !important;
-#     color: #007BFF !important;
-#     border-bottom: 2.5px solid #007BFF !important;
-# }
+/* Tabs */
+.stTabs [data-baseweb="tab"] {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1a237e !important;
+    background: #e3e8f0 !important;
+    border-radius: 8px 8px 0 0 !important;
+    margin-right: 4px !important;
+}
+.stTabs [aria-selected="true"] {
+    background: #fff !important;
+    color: #007BFF !important;
+    border-bottom: 2.5px solid #007BFF !important;
+}
 
 # /* Info/success/warning banners */
 # .stAlert {
