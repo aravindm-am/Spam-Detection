@@ -763,12 +763,12 @@ with tabs[0]:
                     y='Feature', 
                     orientation='h',
                     color='Importance',
-                    color_continuous_scale='Viridis',
-                    title=None
+                    color_continuous_scale='Viridis'
                 )
                 fig_global_importance.update_layout(
                     height=row_height,
                     margin=dict(l=5, r=5, t=5, b=5),
+                    title=""  # Set empty string to avoid 'undefined' label
                 )
                 st.plotly_chart(fig_global_importance, use_container_width=True)
             else:
@@ -782,7 +782,6 @@ with tabs[0]:
                 fig_pie = px.pie(
                     names=labels,
                     values=values,
-                    title=None,
                     color=labels,
                     color_discrete_map={'Normal': '#007BFF', 'Anomaly': '#FF4B4B'},
                     hole=0.4
@@ -790,7 +789,8 @@ with tabs[0]:
                 fig_pie.update_layout(
                     height=row_height,
                     margin=dict(l=5, r=5, t=5, b=5),
-                    legend=dict(orientation="h", yanchor="bottom", y=-0.2)
+                    legend=dict(orientation="h", yanchor="bottom", y=-0.2),
+                    title=""  # Set empty string to avoid 'undefined' label
                 )
                 st.plotly_chart(fig_pie, use_container_width=True)
             else:
@@ -814,6 +814,7 @@ with tabs[0]:
                 fig_corr.update_layout(
                     height=row_height,
                     margin=dict(l=5, r=5, t=5, b=5),
+                    title=""  # Set empty string to avoid 'undefined' label
                 )
                 fig_corr.update_traces(texttemplate="%{text}", textfont={"size": 10})
                 st.plotly_chart(fig_corr, use_container_width=True)
@@ -850,7 +851,7 @@ with tabs[0]:
                         marker_color='#FF4B4B'
                     ))
                     fig_dist.update_layout(
-                        title=None,
+                        title="",  # Set empty string to avoid 'undefined' label
                         xaxis_title="Value",
                         barmode='group',
                         height=row_height,
@@ -896,7 +897,7 @@ with tabs[0]:
                     text=bin_labels
                 ))
                 fig_hist.update_layout(
-                    title=None,
+                    title="",  # Set empty string to avoid 'undefined' label
                     xaxis_title="Anomaly Score",
                     yaxis_title="Count",
                     barmode='group',
@@ -949,10 +950,10 @@ with tabs[1]:
                                 x='Importance', 
                                 y='Feature', 
                                 orientation='h',
-                                title='Individual Feature Importance',
                                 color='Importance',
                                 color_continuous_scale='Blues'
                             )
+                        fig_importance.update_layout(title="Individual Feature Importance")
                         st.plotly_chart(fig_importance, use_container_width=True)
                                               
 
