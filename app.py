@@ -77,18 +77,18 @@ body, .main, .block-container {
     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
 
-# /* Remove blank spaces before the title */
-# .block-container { margin-top: 0 !important; }
-# section.main { padding-top: 0 !important; }
+/* Remove blank spaces before the title */
+.block-container { margin-top: 0 !important; }
+section.main { padding-top: 0 !important; }
 
-# /* Card-like containers */
-# .stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
-#     background: #fff !important;
-#     border-radius: 18px !important;
-#     box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
-#     padding: 24px 24px 16px 24px !important;
-#     margin-bottom: 18px !important;
-# }
+/* Card-like containers */
+.stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
+    background: #fff !important;
+    border-radius: 18px !important;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
+    padding: 24px 24px 16px 24px !important;
+    margin-bottom: 18px !important;
+}
 
 # /* Remove empty card/box below tabs */
 # .stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
