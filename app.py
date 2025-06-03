@@ -890,6 +890,7 @@ with tabs[1]:
                         'Importance': list(shap_data['feature_importance'].values())
                     }).sort_values('Importance', ascending=False)
 
+                    # Prepare data for waterfall plot
                     waterfall_data = shap_data['feature_contributions']
                     features = list(waterfall_data.keys())
                     shap_values = [waterfall_data[f]['shap_value'] for f in features]
@@ -897,17 +898,20 @@ with tabs[1]:
                     tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
 
                     with tab1:
-                      st.markdown("### 📊 Individual Feature Importance")
-                      fig_importance = px.bar(
-                            feature_importance_df, 
-                            x='Importance', 
-                            y='Feature', 
-                            orientation='h',
-                            title='Individual Feature Importance',
-                            color='Importance',
-                            color_continuous_scale='Blues'
-                      )
-                      st.plotly_chart(fig_importance, use_container_width=True)
+                        st.markdown("### 📊 Individual Feature Importance")
+                        if not feature_importance_df.empty:
+                            fig_importance = px.bar(
+                                feature_importance_df, 
+                                x='Importance', 
+                                y='Feature', 
+                                orientation='h',
+                                title='Individual Feature Importance',
+                                color='Importance',
+                                color_continuous_scale='Blues'
+                            )
+                            st.plotly_chart(fig_importance, use_container_width=True)
+                        else:
+                            st.info('No feature importance data available for this prediction.')
                        
 
                     with tab2:
