@@ -666,16 +666,275 @@ with tabs[0]:
                     results_df = pd.DataFrame(notebook_output["results"])
                     # Rename columns for display
                     results_df.columns = ['Caller', 'Prediction', 'Anomaly Score']
-                    def highlight_anomaly(row):
+                    # Build HTML table with red for Anomaly rows
+                    def row_html(row):
                         if row['Prediction'] == 'Anomaly':
-                            return ['color: red; font-weight: bold;', 'color: red; font-weight: bold;', 'color: red; font-weight: bold;']
+                            return f"<tr><td style='color:red;font-weight:bold;'>{row['Caller']}</td><td style='color:red;font-weight:bold;'>{row['Prediction']}</td><td style='color:red;font-weight:bold;'>{row['Anomaly Score']:.4f}</td></tr>"
                         else:
-                            return ['', '', '']
-                    styled_df = results_df.style.apply(highlight_anomaly, axis=1)
-                    styled_df = styled_df.set_properties(**{'font-size': '1.1em'})
-                    styled_df = styled_df.set_table_styles([
-                        dict(selector='th', props=[('color', '#1a237e'), ('font-weight', 'bold'), ('font-size', '1.1em')])
-                    ])
-                    st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
+                            return f"<tr><td>{row['Caller']}</td><td>{row['Prediction']}</td><td>{row['Anomaly Score']:.4f}</td></tr>"
+                    table_html = "<table style='width:100%;border-collapse:collapse;'>"
+                    table_html += "<thead><tr>"
+                    for col in results_df.columns:
+                        table_html += f"<th style='color:#1a237e;font-weight:bold;font-size:1.1em;padding:6px 8px;text-align:left;border-bottom:2px solid #e3e8f0;'>{col}</th>"
+                    table_html += "</tr></thead><tbody>"
+                    for _, row in results_df.iterrows():
+                        table_html += row_html(row)
+                    table_html += "</tbody></table>"
+                    st.markdown(table_html, unsafe_allow_html=True)
                 else:
                     st.warning("No results found in notebook output.")
+    # Always show the hardcoded plots below the upload UI
+    # Check if we have a real analysis or should use the hardcoded data
+    if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
+        shap_data = st.session_state.shap_data
+        combined = shap_data['combined_analysis']
+        st.success("✅ Displaying analysis from the latest run")
+    else:
+        # Use hardcoded combined analysis
+        combined = HARDCODED_COMBINED_ANALYSIS
+        st.info("ℹ️ Displaying pre-computed analysis. Run an individual analysis for real-time data.")
+
+    # Main container for the combined analysis layout
+    with st.container():
+        # Calculate available height for plots
+        header_height = 60  # app title + info banner
+        padding = 32  # extra margin/padding
+        available_height = st.session_state['viewport_height'] - header_height - padding
+        # 2 rows: each row gets half the available height
+        row_height = max(200, int(available_height / 2))
+        # 3 columns for the first row
+        col_width = int(st.session_state['viewport_width'] / 3)
+    
+        # First row - 3 equal columns for the three main plots
+        row1_col1, row1_col2, row1_col3 = st.columns(3, gap="medium")
+        with row1_col1:
+            if 'global_feature_importance' in combined:
+                st.markdown("#### <span style='color:#007BFF;'>📊 Top Indicators of Fraudulent Activity</span>", unsafe_allow_html=True)
+                global_importance_df = pd.DataFrame({
+                    'Feature': list(combined['global_feature_importance'].keys()),
+                    'Importance': list(combined['global_feature_importance'].values())
+                }).sort_values('Importance', ascending=False)
+                global_importance_df = global_importance_df.head(10)
+                fig_global_importance = px.bar(
+                    global_importance_df, 
+                    x='Importance', 
+                    y='Feature', 
+                    orientation='h',
+                    color='Importance',
+                    color_continuous_scale='Viridis',
+                    title=None
+                )
+                fig_global_importance.update_layout(
+                    height=row_height,
+                    margin=dict(l=5, r=5, t=5, b=5),
+                )
+                st.plotly_chart(fig_global_importance, use_container_width=True)
+            else:
+                st.warning("Global feature importance data not available.")
+    
+        with row1_col2:
+            if 'prediction_distribution' in combined:
+                st.markdown("#### <span style='color:#007BFF;'>🔄 Fraud vs. Normal Call Distribution</span>", unsafe_allow_html=True)
+                labels = list(combined['prediction_distribution'].keys())
+                values = list(combined['prediction_distribution'].values())
+                fig_pie = px.pie(
+                    names=labels,
+                    values=values,
+                    title=None,
+                    color=labels,
+                    color_discrete_map={'Normal': '#007BFF', 'Anomaly': '#FF4B4B'},
+                    hole=0.4
+                )
+                fig_pie.update_layout(
+                    height=row_height,
+                    margin=dict(l=5, r=5, t=5, b=5),
+                    legend=dict(orientation="h", yanchor="bottom", y=-0.2)
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+            else:
+                st.warning("Prediction distribution data not available.")
+    
+        with row1_col3:
+            if 'correlation_matrix' in combined:
+                st.markdown("#### <span style='color:#007BFF;'>🔄 Correlated Call Patterns in Risk Profiles</span>", unsafe_allow_html=True)
+                important_features = ["short_call_ratio", "mean_duration", "pct_daytime", "pct_weekend"]
+                filtered_corr = {k: {k2: v2 for k2, v2 in v.items() if k2 in important_features} 
+                                for k, v in combined['correlation_matrix'].items() 
+                                if k in important_features}
+                corr_df = pd.DataFrame.from_dict(filtered_corr)
+                fig_corr = px.imshow(
+                    corr_df,
+                    color_continuous_scale='RdBu_r',
+                    zmin=-1, 
+                    zmax=1,
+                    text_auto='.2f'
+                )
+                fig_corr.update_layout(
+                    height=row_height,
+                    margin=dict(l=5, r=5, t=5, b=5),
+                )
+                fig_corr.update_traces(texttemplate="%{text}", textfont={"size": 10})
+                st.plotly_chart(fig_corr, use_container_width=True)
+            else:
+                st.warning("Correlation matrix data not available.")  
+        row2_col1, row2_col2 = st.columns(2)
+        with row2_col1:
+            if 'feature_distributions' in combined:
+                st.markdown("#### <span style='color:#007BFF;'>📈 Spotting Risk Through Call Behavior</span>", unsafe_allow_html=True)
+                feature_options = list(combined['feature_distributions'].keys())
+                select_feature = st.selectbox(
+                    "Select feature:", 
+                    options=feature_options,
+                    key="compact_feature_selector"
+                )
+                if select_feature:
+                    feature_dist = combined['feature_distributions'][select_feature]
+                    normal_values = feature_dist['normal']
+                    anomaly_values = feature_dist['anomaly']
+                    stats_to_show = ['mean', '25%', '50%', '75%']
+                    fig_dist = go.Figure()
+                    fig_dist.add_trace(go.Bar(
+                        x=[normal_values[s] for s in stats_to_show],
+                        y=stats_to_show,
+                        orientation='h',
+                        name="Normal",
+                        marker_color='#007BFF'
+                    ))
+                    fig_dist.add_trace(go.Bar(
+                        x=[anomaly_values[s] for s in stats_to_show],
+                        y=stats_to_show,
+                        orientation='h',
+                        name="Anomaly",
+                        marker_color='#FF4B4B'
+                    ))
+                    fig_dist.update_layout(
+                        title=None,
+                        xaxis_title="Value",
+                        barmode='group',
+                        height=row_height,
+                        margin=dict(l=5, r=5, t=20, b=20),
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                    )
+                    st.plotly_chart(fig_dist, use_container_width=True)
+            else:
+                st.warning("Feature distribution data not available.")
+        with row2_col2:
+            if 'anomaly_score_distribution' in combined:
+                st.markdown("#### <span style='color:#007BFF;'>🔔 Likelihood of Fraud Across Users</span>", unsafe_allow_html=True)
+                hist_data = combined['anomaly_score_distribution']['histogram_data']
+                bins = hist_data['bins']
+                bin_indices = range(0, len(bins)-1, 2)
+                bin_centers = [(bins[i] + bins[i+1])/2 for i in bin_indices if i+1 < len(bins)]
+                bin_labels = [f"{bins[i]:.1f}-{bins[i+1]:.1f}" for i in bin_indices if i+1 < len(bins)]
+                normal_counts = []
+                anomaly_counts = []
+                for i in bin_indices:
+                    if i+1 < len(bins):
+                        if i < len(hist_data['normal_counts']):
+                            normal_counts.append(hist_data['normal_counts'][i])
+                        else:
+                            normal_counts.append(0)
+                        if i < len(hist_data['anomaly_counts']):
+                            anomaly_counts.append(hist_data['anomaly_counts'][i])
+                        else:
+                            anomaly_counts.append(0)
+                fig_hist = go.Figure()
+                fig_hist.add_trace(go.Bar(
+                    x=bin_centers,
+                    y=normal_counts,
+                    name='Normal',
+                    marker_color='#007BFF',
+                    text=bin_labels
+                ))
+                fig_hist.add_trace(go.Bar(
+                    x=bin_centers,
+                    y=anomaly_counts,
+                    name='Anomaly',
+                    marker_color='#FF4B4B',
+                    text=bin_labels
+                ))
+                fig_hist.update_layout(
+                    title=None,
+                    xaxis_title="Anomaly Score",
+                    yaxis_title="Count",
+                    barmode='group',
+                    height=row_height,
+                    margin=dict(l=5, r=5, t=20, b=20),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                )
+                st.plotly_chart(fig_hist, use_container_width=True)
+            else:
+                st.warning("Anomaly score distribution data not available.")
+
+# Tab 2: Individual Analysis (now second)
+with tabs[1]:
+    st.markdown("#### <span style='color:#007BFF;'>Check a Phone Number for Fraud</span>", unsafe_allow_html=True)
+    phone_number = st.text_input("Enter Phone Number to Check")
+    run_button = st.button("Run Fraud Check", key="run_check_button")
+    
+    if run_button:
+        if phone_number.strip():
+            with st.spinner("Subex Spam Scoring Started..."):
+                result, notebook_output = run_notebook(phone_number.strip())
+                if result == "SUCCESS":
+                    st.success("🎉 Analysis complete!")
+                    shap_data = notebook_output
+                    st.session_state.shap_data = shap_data
+
+                    st.subheader("📞 Prediction Summary")
+                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Phone Number</b>: <code>{phone_number}</code></span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Prediction</b>: <code>{shap_data['prediction']}</code></span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Anomaly Score</b>: <code>{shap_data['anomaly_score']:.4f}</code></span>", unsafe_allow_html=True)
+                    if 'explanation' in shap_data and shap_data['explanation']:
+                        st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>AI Explanation</b>: {shap_data['explanation']}</span>", unsafe_allow_html=True)
+
+                    feature_importance_df = pd.DataFrame({
+                        'Feature': list(shap_data['feature_importance'].keys()),
+                        'Importance': list(shap_data['feature_importance'].values())
+                    }).sort_values('Importance', ascending=False)
+
+                    waterfall_data = shap_data['feature_contributions']
+                    features = list(waterfall_data.keys())
+                    shap_values = [waterfall_data[f]['shap_value'] for f in features]
+
+                    tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
+
+                    with tab1:
+                        st.markdown("### <span style='color:#007BFF;'>📊 Individual Feature Importance</span>", unsafe_allow_html=True)
+                        if not feature_importance_df.empty:
+                            fig_importance = px.bar(
+                                feature_importance_df, 
+                                x='Importance', 
+                                y='Feature', 
+                                orientation='h',
+                                title='Individual Feature Importance',
+                                color='Importance',
+                                color_continuous_scale='Blues'
+                            )
+                            st.plotly_chart(fig_importance, use_container_width=True)
+                        else:
+                            st.info('No feature importance data available for this prediction.')
+
+                    with tab2:
+                        fig_waterfall = go.Figure(go.Waterfall(
+                            name="SHAP Values", 
+                            orientation="h",
+                            y=features,
+                            x=shap_values,
+                            connector={"line":{"color":"rgb(63, 63, 63)"}},
+                            decreasing={"marker":{"color":"#FF4B4B"}},
+                            increasing={"marker":{"color":"#007BFF"}},
+                            base=shap_data['base_value']
+                        ))
+                        fig_waterfall.update_layout(
+                            title="SHAP Waterfall Plot",
+                            xaxis_title="SHAP Value",
+                            yaxis_title="Feature",
+                            showlegend=False
+                        )
+                        st.plotly_chart(fig_waterfall, use_container_width=True)
+
+                else:
+                    st.error(f"❌ Job failed: {result}")
+        else:
+            st.warning("📱 Please enter a valid phone number.")
