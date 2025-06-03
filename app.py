@@ -124,58 +124,58 @@ h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
     background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
 }
 
-/* File uploader */
-.stFileUploader, .stFileUploader label {
-    background: #f0f4fa !important;
-    border-radius: 10px !important;
-    border: 1.5px solid #e3e8f0 !important;
-    padding: 1em !important;
-    color: #1a237e !important;
-    font-weight: 500 !important;
-}
+# /* File uploader */
+# .stFileUploader, .stFileUploader label {
+#     background: #f0f4fa !important;
+#     border-radius: 10px !important;
+#     border: 1.5px solid #e3e8f0 !important;
+#     padding: 1em !important;
+#     color: #1a237e !important;
+#     font-weight: 500 !important;
+# }
 
-/* Tabs */
-.stTabs [data-baseweb="tab"] {
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    color: #1a237e !important;
-    background: #e3e8f0 !important;
-    border-radius: 8px 8px 0 0 !important;
-    margin-right: 4px !important;
-}
-.stTabs [aria-selected="true"] {
-    background: #fff !important;
-    color: #007BFF !important;
-    border-bottom: 2.5px solid #007BFF !important;
-}
+# /* Tabs */
+# .stTabs [data-baseweb="tab"] {
+#     font-size: 1.1rem !important;
+#     font-weight: 600 !important;
+#     color: #1a237e !important;
+#     background: #e3e8f0 !important;
+#     border-radius: 8px 8px 0 0 !important;
+#     margin-right: 4px !important;
+# }
+# .stTabs [aria-selected="true"] {
+#     background: #fff !important;
+#     color: #007BFF !important;
+#     border-bottom: 2.5px solid #007BFF !important;
+# }
 
-/* Info/success/warning banners */
-.stAlert {
-    border-radius: 10px !important;
-    font-size: 1.05rem !important;
-}
+# /* Info/success/warning banners */
+# .stAlert {
+#     border-radius: 10px !important;
+#     font-size: 1.05rem !important;
+# }
 
-/* Pie/Bar/Plotly chart container tweaks */
-.stPlotlyChart, .stPlotlyChart > div {
-    background: #fff !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
-    padding: 8px !important;
-}
+# /* Pie/Bar/Plotly chart container tweaks */
+# .stPlotlyChart, .stPlotlyChart > div {
+#     background: #fff !important;
+#     border-radius: 14px !important;
+#     box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
+#     padding: 8px !important;
+# }
 
-/* Input fields */
-.stTextInput > div > input {
-    border-radius: 8px !important;
-    border: 1.5px solid #e3e8f0 !important;
-    background: #f0f4fa !important;
-    font-size: 1.08rem !important;
-    padding: 0.5em 1em !important;
-}
+# /* Input fields */
+# .stTextInput > div > input {
+#     border-radius: 8px !important;
+#     border: 1.5px solid #e3e8f0 !important;
+#     background: #f0f4fa !important;
+#     font-size: 1.08rem !important;
+#     padding: 0.5em 1em !important;
+# }
 
-/* Hide Streamlit default hamburger and footer */
-#MainMenu, footer {visibility: hidden;}
-</style>
-''', unsafe_allow_html=True)
+# /* Hide Streamlit default hamburger and footer */
+# #MainMenu, footer {visibility: hidden;}
+# </style>
+# ''', unsafe_allow_html=True)
 
 # # Apply custom CSS to left-align the app and optimize layout
 # st.markdown("""
