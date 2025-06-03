@@ -72,10 +72,10 @@ section.main > div { max-width: 100vw !important; padding-left: 0 !important; pa
 .css-18e3th9 { align-items: stretch !important; }
 .stAlert:first-child { display: none !important; }
 
-# body, .main, .block-container {
-#     background: #f7f9fb !important;
-#     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-# }
+body, .main, .block-container {
+    background: #f7f9fb !important;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
 
 # /* Remove blank spaces before the title */
 # .block-container { margin-top: 0 !important; }
