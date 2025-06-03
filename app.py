@@ -647,6 +647,32 @@ with tabs[0]:
     st.markdown("#### <span style='color:#007BFF;'>Upload a file for scoring</span>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
     if uploaded_file is not None:
+        # --- Upload to Databricks DBFS ---
+        import base64
+        file_name = uploaded_file.name
+        file_bytes = uploaded_file.read()
+        encoded_content = base64.b64encode(file_bytes).decode("utf-8")
+        dbfs_file_path = f"dbfs:/tmp/{file_name}"
+        st.info(f"Uploading to DBFS: {dbfs_file_path} ...")
+        upload_response = requests.post(
+            f"{DATABRICKS_HOST}/api/2.0/dbfs/put",
+            headers={"Authorization": f"Bearer {DATABRICKS_TOKEN}"},
+            json={
+                "path": dbfs_file_path,
+                "overwrite": True,
+                "contents": encoded_content
+            }
+        )
+        if upload_response.status_code == 200:
+            st.success(f"✅ File uploaded successfully to {dbfs_file_path}")
+        else:
+            st.error(f"❌ Upload to DBFS failed: {upload_response.status_code}")
+            try:
+                st.json(upload_response.json())
+            except Exception:
+                st.write(upload_response.text)
+        # Reset file pointer for pandas
+        uploaded_file.seek(0)
         df_uploaded = pd.read_csv(uploaded_file)
         st.success("✅ File uploaded! Click 'Score' to analyze.")
         # Display uploaded file in a Streamlit dataframe (no tabulate dependency)
