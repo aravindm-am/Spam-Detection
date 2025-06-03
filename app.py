@@ -294,7 +294,6 @@ DATABRICKS_HOST = st.secrets["databricks_host"]
 DATABRICKS_PATH = st.secrets["databricks_http_path"]
 DATABRICKS_TOKEN = st.secrets["databricks_token"]
 DATABRICKS_NOTEBOOK_PATH = st.secrets["databricks_notebook_path"]
-DATABRICKS_NOTEBOOK_PATH_BATCH = st.secrets["databricks_notebook_path_batch"]
 
 @st.cache_resource
 def get_connection():
@@ -328,7 +327,7 @@ def run_notebook(phone_number):
     submit_payload = {
         "run_name": f"FraudCheck_{phone_number}",
         "notebook_task": {
-            "notebook_path": DATABRICKS_NOTEBOOK_PATH,  # Use individual notebook path from secrets
+            "notebook_path": DATABRICKS_NOTEBOOK_PATH,
             "base_parameters": {
                 "phone_number": phone_number
             }
@@ -471,113 +470,6 @@ except Exception:
 
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
-    # --- Batch scoring UI ---
-    st.markdown("#### Upload a file for scoring")
-    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
-    if uploaded_file is not None:
-        df_uploaded = pd.read_csv(uploaded_file)
-        
-        if st.button("Score", key="score_batch_button"):
-            # Just run the Databricks notebook (databricks-new.py) and display the JSON output
-            headers = {
-                "Authorization": f"Bearer {DATABRICKS_TOKEN}",
-                "Content-Type": "application/json"
-            }
-            EXISTING_CLUSTER_ID = "0521-131856-gsh3b6se"
-            batch_notebook_path = DATABRICKS_NOTEBOOK_PATH_BATCH  # Path to databricks-new.py
-            submit_payload = {
-                "run_name": f"BatchFraudCheck_{int(time.time())}",
-                "notebook_task": {
-                    "notebook_path": batch_notebook_path,
-                    "base_parameters": {}  # No need to pass input_file if hardcoded
-                },
-                "existing_cluster_id": EXISTING_CLUSTER_ID        
-            }
-            response = requests.post(
-                f"{DATABRICKS_HOST}/api/2.1/jobs/runs/submit",
-                headers=headers,
-                json=submit_payload
-            )
-            if response.status_code != 200:
-                st.error("❌ Failed to start Databricks batch job.")
-                st.text(response.text)
-            else:
-                run_id = response.json()["run_id"]
-                status_placeholder = st.empty()
-                while True:
-                    status_response = requests.get(
-                        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get?run_id={run_id}",
-                        headers=headers
-                    )
-                    run_state = status_response.json()["state"]["life_cycle_state"]
-                    if run_state in ("TERMINATED", "SKIPPED", "INTERNAL_ERROR"):
-                        break
-                    time.sleep(1)
-                status_placeholder.empty()
-                result = status_response.json()
-                result_state = result.get("state", {}).get("result_state", "UNKNOWN")
-                notebook_output = None
-                if result_state == "SUCCESS":
-                    output_response = requests.get(
-                        f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output?run_id={run_id}",
-                        headers=headers
-                    )
-                    if output_response.status_code == 200:
-                        notebook_result = output_response.json().get("notebook_output", {})
-                        notebook_output = notebook_result.get("result", None)
-                        if isinstance(notebook_output, str):
-                            try:
-                                notebook_output = json.loads(notebook_output)
-                            except:
-                                pass
-                if notebook_output and "results" in notebook_output:
-                    st.success("🎉 Batch scoring complete!")
-                    result_df = pd.DataFrame(notebook_output["results"])
-                    st.markdown("""
-                        <style>
-                        .styled-table {
-                            border-collapse: collapse;
-                            margin: 20px 0;
-                            font-size: 1.1em;
-                            font-family: 'Segoe UI', Arial, sans-serif;
-                            min-width: 400px;
-                            box-shadow: 0 0 10px rgba(0,0,0,0.08);
-                        }
-                        .styled-table thead tr {
-                            background-color: #007BFF;
-                            color: #ffffff;
-                            text-align: left;
-                        }
-                        .styled-table th, .styled-table td {
-                            padding: 12px 18px;
-                        }
-                        .styled-table tbody tr {
-                            border-bottom: 1px solid #dddddd;
-                        }
-                        .styled-table tbody tr:nth-of-type(even) {
-                            background-color: #f3f3f3;
-                        }
-                        .styled-table tbody tr:last-of-type {
-                            border-bottom: 2px solid #007BFF;
-                        }
-                        /* Center align 'caller' and 'prediction' columns */
-                        .styled-table td:nth-child(1), /* caller column */
-                        .styled-table th:nth-child(1) {
-                            text-align: center !important;
-                            vertical-align: middle !important;
-                        }
-                        .styled-table td:nth-child(2), /* prediction column */
-                        .styled-table th:nth-child(2) {
-                            text-align: center !important;
-                            vertical-align: middle !important;
-                        }
-                        </style>
-                    """, unsafe_allow_html=True)
-                    st.markdown("#### Prediction Results")
-                    st.markdown(result_df.to_html(classes='styled-table', index=False, escape=False), unsafe_allow_html=True)
-                else:
-                    st.error(f"❌ Batch job failed or no results: {result_state}")
-    # Always show the hardcoded plots below the upload UI
     # Check if we have a real analysis or should use the hardcoded data
     if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
         shap_data = st.session_state.shap_data
@@ -588,6 +480,9 @@ with tabs[0]:
         combined = HARDCODED_COMBINED_ANALYSIS
         st.info("ℹ️ Displaying pre-computed analysis. Run an individual analysis for real-time data.")
 
+
+    
+    
     # Main container for the combined analysis layout
     with st.container():
         # Calculate available height for plots
