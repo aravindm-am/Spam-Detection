@@ -662,13 +662,13 @@ with tabs[0]:
                                 pass
                 if notebook_output and "results" in notebook_output:
                   # Display results table with caller, prediction, and anomaly_score
-                    st.markdown("#### <span style='color:#007BFF;'>📋 Batch Scoring Results</span>", unsafe_allow_html=True)
+                    st.markdown("#### <span style='color:#007BFF;'>📋 Scoring Results</span>", unsafe_allow_html=True)
                     results_df = pd.DataFrame(notebook_output["results"])
                     # Rename columns for display
                     results_df.columns = ['Caller', 'Prediction', 'Anomaly Score']
                     def highlight_anomaly(row):
                         if row['Prediction'] == 'Anomaly':
-                            return ['color: red; font-weight: bold;', 'color: red; font-weight: bold;', 'color: red; font-weight: bold;']
+                            return ['color: red; font-weight: normal;', 'color: red; font-weight: normal;', 'color: red; font-weight: normal;']
                         else:
                             return ['', '', '']
                     styled_df = results_df.style.apply(highlight_anomaly, axis=1)
