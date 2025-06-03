@@ -898,7 +898,7 @@ with tabs[1]:
 
                     with tab1:
                       st.markdown("### 📊 Individual Feature Importance")
-                        fig_importance = px.bar(
+                      fig_importance = px.bar(
                             feature_importance_df, 
                             x='Importance', 
                             y='Feature', 
@@ -906,8 +906,8 @@ with tabs[1]:
                             title='Individual Feature Importance',
                             color='Importance',
                             color_continuous_scale='Blues'
-                        )
-                        st.plotly_chart(fig_importance, use_container_width=True)
+                      )
+                      st.plotly_chart(fig_importance, use_container_width=True)
                        
 
                     with tab2:
