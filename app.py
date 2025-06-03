@@ -12,14 +12,14 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
-# # Streamlit UI
-# # Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
-# st.markdown('''
-# <style>
-# .block-container { margin-top: 0 !important; }
-# section.main { padding-top: 0 !important; }
-# </style>
-# ''', unsafe_allow_html=True)
+# Streamlit UI
+# Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
+st.markdown('''
+<style>
+.block-container { margin-top: 0 !important; }
+section.main { padding-top: 0 !important; }
+</style>
+''', unsafe_allow_html=True)
 
 # # --- Custom header with image on the right ---
 # st.markdown('''
@@ -177,47 +177,47 @@ import plotly.express as px
 # </style>
 # ''', unsafe_allow_html=True)
 
-# Apply custom CSS to left-align the app and optimize layout
-st.markdown("""
-<style>
-    html, body, .block-container {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-    }
-    .block-container {
-        padding-top: 0.5rem !important;
-        padding-right: 1rem !important;
-        padding-left: 1rem !important;
-        padding-bottom: 0.5rem !important;
-    }
-    .stPlotlyChart {
-        margin-bottom: 0 !important;
-    }
-    /* Remove Streamlit's default centering and width restrictions */
-    [data-testid="stAppViewContainer"] > .main {
-        max-width: 100vw !important;
-        width: 100vw !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-    [data-testid="stHeader"] {
-        max-width: 100vw !important;
-        width: 100vw !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    [data-testid="stSidebar"] {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+# # Apply custom CSS to left-align the app and optimize layout
+# st.markdown("""
+# <style>
+#     html, body, .block-container {
+#         width: 100vw !important;
+#         max-width: 100vw !important;
+#         min-width: 100vw !important;
+#         margin: 0 !important;
+#         padding: 0 !important;
+#         box-sizing: border-box !important;
+#     }
+#     .block-container {
+#         padding-top: 0.5rem !important;
+#         padding-right: 1rem !important;
+#         padding-left: 1rem !important;
+#         padding-bottom: 0.5rem !important;
+#     }
+#     .stPlotlyChart {
+#         margin-bottom: 0 !important;
+#     }
+#     /* Remove Streamlit's default centering and width restrictions */
+#     [data-testid="stAppViewContainer"] > .main {
+#         max-width: 100vw !important;
+#         width: 100vw !important;
+#         margin-left: 0 !important;
+#         margin-right: 0 !important;
+#         padding-left: 0 !important;
+#         padding-right: 0 !important;
+#     }
+#     [data-testid="stHeader"] {
+#         max-width: 100vw !important;
+#         width: 100vw !important;
+#         margin: 0 !important;
+#         padding: 0 !important;
+#     }
+#     [data-testid="stSidebar"] {
+#         margin: 0 !important;
+#         padding: 0 !important;
+#     }
+# </style>
+# """, unsafe_allow_html=True)
 
 # Hardcoded combined analysis data to avoid running analysis every time
 HARDCODED_COMBINED_ANALYSIS = {
