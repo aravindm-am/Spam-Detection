@@ -899,8 +899,7 @@ with tabs[1]:
 
                     with tab1:
                         st.markdown("### 📊 Individual Feature Importance")
-                        if not feature_importance_df.empty:
-                            fig_importance = px.bar(
+                        fig_importance = px.bar(
                                 feature_importance_df, 
                                 x='Importance', 
                                 y='Feature', 
@@ -909,10 +908,8 @@ with tabs[1]:
                                 color='Importance',
                                 color_continuous_scale='Blues'
                             )
-                            st.plotly_chart(fig_importance, use_container_width=True)
-                        else:
-                            st.info('No feature importance data available for this prediction.')
-                       
+                        st.plotly_chart(fig_importance, use_container_width=True)
+                                              
 
                     with tab2:
                         fig_waterfall = go.Figure(go.Waterfall(
