@@ -661,28 +661,25 @@ with tabs[0]:
                             except:
                                 pass
                 if notebook_output and "results" in notebook_output:
-                    # Display results table with caller, prediction, and anomaly_score
+                  # Display results table with caller, prediction, and anomaly_score
                     st.markdown("#### <span style='color:#007BFF;'>📋 Batch Scoring Results</span>", unsafe_allow_html=True)
                     results_df = pd.DataFrame(notebook_output["results"])
                     # Rename columns for display
                     results_df.columns = ['Caller', 'Prediction', 'Anomaly Score']
-                    # Build HTML table with red for Anomaly rows
-                    def row_html(row):
+                    def highlight_anomaly(row):
                         if row['Prediction'] == 'Anomaly':
-                            return f"<tr><td style='color:red;font-weight:bold;'>{row['Caller']}</td><td style='color:red;font-weight:bold;'>{row['Prediction']}</td><td style='color:red;font-weight:bold;'>{row['Anomaly Score']:.4f}</td></tr>"
+                            return ['color: red; font-weight: bold;', 'color: red; font-weight: bold;', 'color: red; font-weight: bold;']
                         else:
-                            return f"<tr><td>{row['Caller']}</td><td>{row['Prediction']}</td><td>{row['Anomaly Score']:.4f}</td></tr>"
-                    table_html = "<table style='width:100%;border-collapse:collapse;'>"
-                    table_html += "<thead><tr>"
-                    for col in results_df.columns:
-                        table_html += f"<th style='color:#1a237e;font-weight:bold;font-size:1.1em;padding:6px 8px;text-align:left;border-bottom:2px solid #e3e8f0;'>{col}</th>"
-                    table_html += "</tr></thead><tbody>"
-                    for _, row in results_df.iterrows():
-                        table_html += row_html(row)
-                    table_html += "</tbody></table>"
-                    st.markdown(table_html, unsafe_allow_html=True)
+                            return ['', '', '']
+                    styled_df = results_df.style.apply(highlight_anomaly, axis=1)
+                    styled_df = styled_df.set_properties(**{'font-size': '1.1em'})
+                    styled_df = styled_df.set_table_styles([
+                        dict(selector='th', props=[('color', '#1a237e'), ('font-weight', 'bold'), ('font-size', '1.1em')])
+                    ])
+                    st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
                 else:
                     st.warning("No results found in notebook output.")
+                    
     # Always show the hardcoded plots below the upload UI
     # Check if we have a real analysis or should use the hardcoded data
     if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
