@@ -77,29 +77,29 @@ body, .main, .block-container {
     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
 
-/* Remove blank spaces before the title */
-.block-container { margin-top: 0 !important; }
-section.main { padding-top: 0 !important; }
+# /* Remove blank spaces before the title */
+# .block-container { margin-top: 0 !important; }
+# section.main { padding-top: 0 !important; }
 
-/* Card-like containers */
-.stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
-    background: #fff !important;
-    border-radius: 18px !important;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
-    padding: 24px 24px 16px 24px !important;
-    margin-bottom: 18px !important;
-}
+# /* Card-like containers */
+# .stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
+#     background: #fff !important;
+#     border-radius: 18px !important;
+#     box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
+#     padding: 24px 24px 16px 24px !important;
+#     margin-bottom: 18px !important;
+# }
 
-/* Remove empty card/box below tabs */
-.stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
-    display: none !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
+# /* Remove empty card/box below tabs */
+# .stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
+#     display: none !important;
+#     height: 0 !important;
+#     min-height: 0 !important;
+#     margin: 0 !important;
+#     padding: 0 !important;
+#     border: none !important;
+#     box-shadow: none !important;
+# }
 
 /* Section headers */
 h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
