@@ -155,13 +155,13 @@ h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
     font-size: 1.05rem !important;
 }
 
-/* Pie/Bar/Plotly chart container tweaks */
-.stPlotlyChart, .stPlotlyChart > div {
-    background: #fff !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
-    padding: 8px !important;
-}
+# /* Pie/Bar/Plotly chart container tweaks */
+# .stPlotlyChart, .stPlotlyChart > div {
+#     background: #fff !important;
+#     border-radius: 14px !important;
+#     box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
+#     padding: 8px !important;
+# }
 
 /* Input fields */
 .stTextInput > div > input {
@@ -172,10 +172,10 @@ h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
     padding: 0.5em 1em !important;
 }
 
-# /* Hide Streamlit default hamburger and footer */
-# #MainMenu, footer {visibility: hidden;}
-# </style>
-# ''', unsafe_allow_html=True)
+/* Hide Streamlit default hamburger and footer */
+#MainMenu, footer {visibility: hidden;}
+</style>
+''', unsafe_allow_html=True)
 
 # # Apply custom CSS to left-align the app and optimize layout
 # st.markdown("""
