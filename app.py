@@ -44,24 +44,24 @@ st.markdown('''
   margin-top: 0;
   min-height: 80px;
 }
-# .custom-header-title {
-#   flex: 1;
-#   display: flex;
-#   align-items: center;
-# }
-# .custom-header-img {
-#   flex-shrink: 0;
-#   margin-left: 32px;
-#   display: flex;
-#   align-items: center;
-#   height: 64px;
-# }
-# @media (max-width: 700px) {
-#   .custom-header-box { flex-direction: column; align-items: flex-start; padding: 18px 12px 12px 12px; }
-#   .custom-header-img { margin-left: 0; margin-top: 12px; }
-# }
-# </style>
-# ''', unsafe_allow_html=True)
+.custom-header-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.custom-header-img {
+  flex-shrink: 0;
+  margin-left: 32px;
+  display: flex;
+  align-items: center;
+  height: 64px;
+}
+@media (max-width: 700px) {
+  .custom-header-box { flex-direction: column; align-items: flex-start; padding: 18px 12px 12px 12px; }
+  .custom-header-img { margin-left: 0; margin-top: 12px; }
+}
+</style>
+''', unsafe_allow_html=True)
 
 # # --- Custom CSS for full-width layout, removing centering, and reducing top spacing ---
 # st.markdown('''
