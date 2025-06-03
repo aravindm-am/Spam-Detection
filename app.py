@@ -663,6 +663,12 @@ with tabs[0]:
                 "contents": encoded_content
             }
         )
+        # --- Debugging output ---
+        st.write("DBFS Upload Response Status:", upload_response.status_code)
+        try:
+            st.write("DBFS Upload Response JSON:", upload_response.json())
+        except Exception:
+            st.write("DBFS Upload Response Text:", upload_response.text)
         if upload_response.status_code == 200:
             st.success(f"✅ File uploaded successfully to {dbfs_file_path}")
         else:
