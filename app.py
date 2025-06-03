@@ -12,170 +12,47 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
-# Streamlit UI
-# Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
-st.markdown('''
+# Apply custom CSS to left-align the app and optimize layout
+st.markdown("""
 <style>
-.block-container { margin-top: 0 !important; }
-section.main { padding-top: 0 !important; }
+    html, body, .block-container {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+    .block-container {
+        padding-top: 0.5rem !important;
+        padding-right: 1rem !important;
+        padding-left: 1rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    .stPlotlyChart {
+        margin-bottom: 0 !important;
+    }
+    /* Remove Streamlit's default centering and width restrictions */
+    [data-testid="stAppViewContainer"] > .main {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    [data-testid="stHeader"] {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    [data-testid="stSidebar"] {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
 </style>
-''', unsafe_allow_html=True)
-
-# --- Custom header with image on the right ---
-st.markdown('''
-<div class="custom-header-box">
-  <div class="custom-header-title">
-    <span style="font-size:2.8rem;font-weight:800;color:#1a237e;vertical-align:middle;">📞 Telecom Fraud Detection</span>
-  </div>
-  <div class="custom-header-img">
-    <img src="https://passionateaboutoss.com/directory/wp-content/uploads/2019/09/Subex_logo_png-397112561.png" alt="Telecom Logo" style="height:64px;width:auto;object-fit:contain;" />
-  </div>
-</div>
-<style>
-.custom-header-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f7f9fb;
-  border-radius: 24px;
-  box-shadow: 0 2px 12px rgba(30, 34, 90, 0.07);
-  padding: 32px 40px 24px 32px;
-  margin-bottom: 18px;
-  margin-top: 0;
-  min-height: 80px;
-}
-.custom-header-title {
-  flex: 1;
-  display: flex;
-  align-items: center;
-}
-.custom-header-img {
-  flex-shrink: 0;
-  margin-left: 32px;
-  display: flex;
-  align-items: center;
-  height: 64px;
-}
-@media (max-width: 700px) {
-  .custom-header-box { flex-direction: column; align-items: flex-start; padding: 18px 12px 12px 12px; }
-  .custom-header-img { margin-left: 0; margin-top: 12px; }
-}
-</style>
-''', unsafe_allow_html=True)
-
-# --- Custom CSS for full-width layout, removing centering, and reducing top spacing ---
-st.markdown('''
-<style>
-/* Remove Streamlit's default max-width and centering */
-section.main > div { max-width: 100vw !important; padding-left: 0 !important; padding-right: 0 !important; }
-.block-container { max-width: 100vw !important; padding-left: 2vw !important; padding-right: 2vw !important; }
-.css-18e3th9 { align-items: stretch !important; }
-.stAlert:first-child { display: none !important; }
-
-body, .main, .block-container {
-    background: #f7f9fb !important;
-    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-}
-
-/* Remove blank spaces before the title */
-.block-container { margin-top: 0 !important; }
-section.main { padding-top: 0 !important; }
-
-/* Card-like containers */
-.stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
-    background: #fff !important;
-    border-radius: 18px !important;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
-    padding: 24px 24px 16px 24px !important;
-    margin-bottom: 18px !important;
-}
-
-/* Remove empty card/box below tabs */
-.stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
-    display: none !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Section headers */
-h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-    color: #1a237e !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.5px;
-}
-
-/* Buttons */
-.stButton > button {
-    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%) !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    padding: 0.6em 2em !important;
-    box-shadow: 0 2px 8px 0 rgba(0,123,255,0.08) !important;
-    transition: background 0.2s;
-}
-.stButton > button:hover {
-    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
-}
-
-/* File uploader */
-.stFileUploader, .stFileUploader label {
-    background: #f0f4fa !important;
-    border-radius: 10px !important;
-    border: 1.5px solid #e3e8f0 !important;
-    padding: 1em !important;
-    color: #1a237e !important;
-    font-weight: 500 !important;
-}
-
-/* Tabs */
-.stTabs [data-baseweb="tab"] {
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    color: #1a237e !important;
-    background: #e3e8f0 !important;
-    border-radius: 8px 8px 0 0 !important;
-    margin-right: 4px !important;
-}
-.stTabs [aria-selected="true"] {
-    background: #fff !important;
-    color: #007BFF !important;
-    border-bottom: 2.5px solid #007BFF !important;
-}
-
-/* Info/success/warning banners */
-.stAlert {
-    border-radius: 10px !important;
-    font-size: 1.05rem !important;
-}
-
-/* Pie/Bar/Plotly chart container tweaks */
-.stPlotlyChart, .stPlotlyChart > div {
-    background: #fff !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
-    padding: 8px !important;
-}
-
-/* Input fields */
-.stTextInput > div > input {
-    border-radius: 8px !important;
-    border: 1.5px solid #e3e8f0 !important;
-    background: #f0f4fa !important;
-    font-size: 1.08rem !important;
-    padding: 0.5em 1em !important;
-}
-
-/* Hide Streamlit default hamburger and footer */
-#MainMenu, footer {visibility: hidden;}
-</style>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Hardcoded combined analysis data to avoid running analysis every time
 HARDCODED_COMBINED_ANALYSIS = {
@@ -504,15 +381,8 @@ def run_notebook(phone_number):
 
     return result_state, notebook_output
 
-# # Streamlit UI
-# # Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
-# st.markdown('''
-# <style>
-# .block-container { margin-top: 0 !important; }
-# section.main { padding-top: 0 !important; }
-# </style>
-# ''', unsafe_allow_html=True)
-# st.title("📞 Telecom Fraud Detection")
+# Streamlit UI
+st.title("📞 Telecom Fraud Detection")
 
 # Change the order of tabs - Combined Analysis first, Individual Analysis second
 tabs = st.tabs(["📊 Combined Analysis", "🔎 Individual Analysis"])
@@ -602,11 +472,11 @@ except Exception:
 # Tab 1: Combined Analysis (now first)
 with tabs[0]:
     # --- Batch scoring UI ---
-    st.markdown("#### <span style='color:#007BFF;'>Upload a file for scoring</span>", unsafe_allow_html=True)
+    st.markdown("#### Upload a file for scoring")
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
     if uploaded_file is not None:
         df_uploaded = pd.read_csv(uploaded_file)
-        st.success("✅ File uploaded! Click 'Score' to analyze.")
+        
         if st.button("Score", key="score_batch_button"):
             # Just run the Databricks notebook (databricks-new.py) and display the JSON output
             headers = {
@@ -661,25 +531,52 @@ with tabs[0]:
                             except:
                                 pass
                 if notebook_output and "results" in notebook_output:
-                  # Display results table with caller, prediction, and anomaly_score
-                    st.markdown("#### <span style='color:#007BFF;'>📋 Scoring Results</span>", unsafe_allow_html=True)
-                    results_df = pd.DataFrame(notebook_output["results"])
-                    # Rename columns for display
-                    results_df.columns = ['Caller', 'Prediction', 'Anomaly Score']
-                    def highlight_anomaly(row):
-                        if row['Prediction'] == 'Anomaly':
-                            return ['color: red; font-weight: normal;', 'color: red; font-weight: normal;', 'color: red; font-weight: normal;']
-                        else:
-                            return ['', '', '']
-                    styled_df = results_df.style.apply(highlight_anomaly, axis=1)
-                    styled_df = styled_df.set_properties(**{'font-size': '1.1em'})
-                    styled_df = styled_df.set_table_styles([
-                        dict(selector='th', props=[('color', '#1a237e'), ('font-weight', 'bold'), ('font-size', '1.1em')])
-                    ])
-                    st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
+                    st.success("🎉 Batch scoring complete!")
+                    result_df = pd.DataFrame(notebook_output["results"])
+                    st.markdown("""
+                        <style>
+                        .styled-table {
+                            border-collapse: collapse;
+                            margin: 20px 0;
+                            font-size: 1.1em;
+                            font-family: 'Segoe UI', Arial, sans-serif;
+                            min-width: 400px;
+                            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+                        }
+                        .styled-table thead tr {
+                            background-color: #007BFF;
+                            color: #ffffff;
+                            text-align: left;
+                        }
+                        .styled-table th, .styled-table td {
+                            padding: 12px 18px;
+                        }
+                        .styled-table tbody tr {
+                            border-bottom: 1px solid #dddddd;
+                        }
+                        .styled-table tbody tr:nth-of-type(even) {
+                            background-color: #f3f3f3;
+                        }
+                        .styled-table tbody tr:last-of-type {
+                            border-bottom: 2px solid #007BFF;
+                        }
+                        /* Center align 'caller' and 'prediction' columns */
+                        .styled-table td:nth-child(1), /* caller column */
+                        .styled-table th:nth-child(1) {
+                            text-align: center !important;
+                            vertical-align: middle !important;
+                        }
+                        .styled-table td:nth-child(2), /* prediction column */
+                        .styled-table th:nth-child(2) {
+                            text-align: center !important;
+                            vertical-align: middle !important;
+                        }
+                        </style>
+                    """, unsafe_allow_html=True)
+                    st.markdown("#### Prediction Results")
+                    st.markdown(result_df.to_html(classes='styled-table', index=False, escape=False), unsafe_allow_html=True)
                 else:
-                    st.warning("No results found in notebook output.")
-                    
+                    st.error(f"❌ Batch job failed or no results: {result_state}")
     # Always show the hardcoded plots below the upload UI
     # Check if we have a real analysis or should use the hardcoded data
     if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
@@ -706,7 +603,7 @@ with tabs[0]:
         row1_col1, row1_col2, row1_col3 = st.columns(3, gap="medium")
         with row1_col1:
             if 'global_feature_importance' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>📊 Top Indicators of Fraudulent Activity</span>", unsafe_allow_html=True)
+                st.markdown("#### 📊 Global SHAP Feature Importance")
                 global_importance_df = pd.DataFrame({
                     'Feature': list(combined['global_feature_importance'].keys()),
                     'Importance': list(combined['global_feature_importance'].values())
@@ -731,7 +628,7 @@ with tabs[0]:
     
         with row1_col2:
             if 'prediction_distribution' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>🔄 Fraud vs. Normal Call Distribution</span>", unsafe_allow_html=True)
+                st.markdown("#### 🔄 Prediction Distribution")
                 labels = list(combined['prediction_distribution'].keys())
                 values = list(combined['prediction_distribution'].values())
                 fig_pie = px.pie(
@@ -753,7 +650,7 @@ with tabs[0]:
     
         with row1_col3:
             if 'correlation_matrix' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>🔄 Correlated Call Patterns in Risk Profiles</span>", unsafe_allow_html=True)
+                st.markdown("#### 🔄 Correlation Matrix")
                 important_features = ["short_call_ratio", "mean_duration", "pct_daytime", "pct_weekend"]
                 filtered_corr = {k: {k2: v2 for k2, v2 in v.items() if k2 in important_features} 
                                 for k, v in combined['correlation_matrix'].items() 
@@ -777,7 +674,7 @@ with tabs[0]:
         row2_col1, row2_col2 = st.columns(2)
         with row2_col1:
             if 'feature_distributions' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>📈 Spotting Risk Through Call Behavior</span>", unsafe_allow_html=True)
+                st.markdown("#### 📈 Feature Distribution")
                 feature_options = list(combined['feature_distributions'].keys())
                 select_feature = st.selectbox(
                     "Select feature:", 
@@ -817,7 +714,7 @@ with tabs[0]:
                 st.warning("Feature distribution data not available.")
         with row2_col2:
             if 'anomaly_score_distribution' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>🔔 Likelihood of Fraud Across Users</span>", unsafe_allow_html=True)
+                st.markdown("#### 🔔 Anomaly Score Distribution")
                 hist_data = combined['anomaly_score_distribution']['histogram_data']
                 bins = hist_data['bins']
                 bin_indices = range(0, len(bins)-1, 2)
@@ -865,13 +762,12 @@ with tabs[0]:
 
 # Tab 2: Individual Analysis (now second)
 with tabs[1]:
-    st.markdown("#### <span style='color:#007BFF;'>Check a Phone Number for Fraud</span>", unsafe_allow_html=True)
     phone_number = st.text_input("Enter Phone Number to Check")
     run_button = st.button("Run Fraud Check", key="run_check_button")
     
     if run_button:
         if phone_number.strip():
-            with st.spinner("Subex Spam Scoring Started..."):
+            with st.spinner("Subex Spam Scoring Started in Databricks..."):
                 result, notebook_output = run_notebook(phone_number.strip())
                 if result == "SUCCESS":
                     st.success("🎉 Analysis complete!")
@@ -879,18 +775,18 @@ with tabs[1]:
                     st.session_state.shap_data = shap_data
 
                     st.subheader("📞 Prediction Summary")
-                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Phone Number</b>: <code>{phone_number}</code></span>", unsafe_allow_html=True)
-                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Prediction</b>: <code>{shap_data['prediction']}</code></span>", unsafe_allow_html=True)
-                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Anomaly Score</b>: <code>{shap_data['anomaly_score']:.4f}</code></span>", unsafe_allow_html=True)
+                    st.markdown(f"**Phone Number**: `{phone_number}`")
+                    st.markdown(f"**Prediction**: `{shap_data['prediction']}`")
+                    st.markdown(f"**Anomaly Score**: `{shap_data['anomaly_score']:.4f}`")
+
                     if 'explanation' in shap_data and shap_data['explanation']:
-                        st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>AI Explanation</b>: {shap_data['explanation']}</span>", unsafe_allow_html=True)
+                        st.markdown(f"**AI Explanation**: {shap_data['explanation']}")
 
                     feature_importance_df = pd.DataFrame({
                         'Feature': list(shap_data['feature_importance'].keys()),
                         'Importance': list(shap_data['feature_importance'].values())
                     }).sort_values('Importance', ascending=False)
 
-                    # Prepare data for waterfall plot
                     waterfall_data = shap_data['feature_contributions']
                     features = list(waterfall_data.keys())
                     shap_values = [waterfall_data[f]['shap_value'] for f in features]
@@ -899,20 +795,16 @@ with tabs[1]:
 
                     with tab1:
                         st.markdown("### 📊 Individual Feature Importance")
-                        if not feature_importance_df.empty:
-                            fig_importance = px.bar(
-                                feature_importance_df, 
-                                x='Importance', 
-                                y='Feature', 
-                                orientation='h',
-                                title='Individual Feature Importance',
-                                color='Importance',
-                                color_continuous_scale='Blues'
-                            )
-                            st.plotly_chart(fig_importance, use_container_width=True)
-                        else:
-                            st.info('No feature importance data available for this prediction.')
-                       
+                        fig_importance = px.bar(
+                            feature_importance_df, 
+                            x='Importance', 
+                            y='Feature', 
+                            orientation='h',
+                            title='Individual Feature Importance',
+                            color='Importance',
+                            color_continuous_scale='Blues'
+                        )
+                        st.plotly_chart(fig_importance, use_container_width=True)
 
                     with tab2:
                         fig_waterfall = go.Figure(go.Waterfall(
