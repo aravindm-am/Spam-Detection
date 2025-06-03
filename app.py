@@ -661,31 +661,12 @@ with tabs[0]:
                             except:
                                 pass
                 if notebook_output and "results" in notebook_output:
-                    st.success("🎉 Batch scoring complete!")
-                    result_df = pd.DataFrame(notebook_output["results"])
-                    # Rename columns for display
-                    display_df = result_df.rename(columns={"caller": "Caller", "prediction": "Prediction"})
-                    # Style Anomaly rows in red
-                    def highlight_anomaly(val, pred):
-                        if pred == "Anomaly":
-                            return 'color: #FF4B4B; font-weight: 600;'
-                        return ''
-                    def style_row(row):
-                        style_caller = highlight_anomaly(row['Caller'], row['Prediction'])
-                        style_pred = highlight_anomaly(row['Caller'], row['Prediction'])
-                        return [style_caller, style_pred]
-                    if 'Caller' in display_df.columns and 'Prediction' in display_df.columns:
-                        styled_df = display_df.style.apply(lambda row: style_row(row), axis=1)
-                        st.markdown("""
-                            <style>
-                            th.col_heading { font-size: 1.1em !important; color: #1a237e !important; font-weight: 700 !important; }
-                            </style>
-                        """, unsafe_allow_html=True)
-                        st.write(styled_df.to_html(escape=False, index=False), unsafe_allow_html=True)
-                    else:
-                        st.write(display_df)
+                    # Display results table with caller, prediction, and anomaly_score
+                    st.markdown("#### <span style='color:#007BFF;'>📋 Batch Scoring Results</span>", unsafe_allow_html=True)
+                    results_df = pd.DataFrame(notebook_output["results"])
+                    st.dataframe(results_df, use_container_width=True)
                 else:
-                    st.error(f"❌ Batch job failed or no results: {result_state}")
+                    st.warning("No results found in notebook output.")
     # Always show the hardcoded plots below the upload UI
     # Check if we have a real analysis or should use the hardcoded data
     if 'shap_data' in st.session_state and 'combined_analysis' in st.session_state.shap_data:
