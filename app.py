@@ -649,6 +649,9 @@ with tabs[0]:
     if uploaded_file is not None:
         df_uploaded = pd.read_csv(uploaded_file)
         st.success("✅ File uploaded! Click 'Score' to analyze.")
+        # Display uploaded file in markdown table
+        st.markdown('#### 📄 Uploaded File Preview')
+        st.markdown(df_uploaded.head(20).to_markdown(index=False), unsafe_allow_html=True)
         if st.button("Score", key="score_batch_button"):
             # Just run the Databricks notebook (databricks-new.py) and display the JSON output
             headers = {
