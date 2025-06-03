@@ -77,18 +77,18 @@ body, .main, .block-container {
     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
 
-/* Remove blank spaces before the title */
-.block-container { margin-top: 0 !important; }
-section.main { padding-top: 0 !important; }
+# /* Remove blank spaces before the title */
+# .block-container { margin-top: 0 !important; }
+# section.main { padding-top: 0 !important; }
 
-/* Card-like containers */
-.stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
-    background: #fff !important;
-    border-radius: 18px !important;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
-    padding: 24px 24px 16px 24px !important;
-    margin-bottom: 18px !important;
-}
+# /* Card-like containers */
+# .stContainer, .st-cb, .st-bb, .st-cg, .st-cf, .st-cd, .st-ce {
+#     background: #fff !important;
+#     border-radius: 18px !important;
+#     box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07) !important;
+#     padding: 24px 24px 16px 24px !important;
+#     margin-bottom: 18px !important;
+# }
 
 # /* Remove empty card/box below tabs */
 # .stContainer:empty, .st-cb:empty, .st-bb:empty, .st-cg:empty, .st-cf:empty, .st-cd:empty, .st-ce:empty {
@@ -101,81 +101,81 @@ section.main { padding-top: 0 !important; }
 #     box-shadow: none !important;
 # }
 
-# /* Section headers */
-# h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-#     color: #1a237e !important;
-#     font-weight: 700 !important;
-#     letter-spacing: 0.5px;
-# }
+/* Section headers */
+h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+    color: #1a237e !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+}
 
-# /* Buttons */
-# .stButton > button {
-#     background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%) !important;
-#     color: #fff !important;
-#     border: none !important;
-#     border-radius: 8px !important;
-#     font-size: 1.1rem !important;
-#     font-weight: 600 !important;
-#     padding: 0.6em 2em !important;
-#     box-shadow: 0 2px 8px 0 rgba(0,123,255,0.08) !important;
-#     transition: background 0.2s;
-# }
-# .stButton > button:hover {
-#     background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
-# }
+/* Buttons */
+.stButton > button {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    padding: 0.6em 2em !important;
+    box-shadow: 0 2px 8px 0 rgba(0,123,255,0.08) !important;
+    transition: background 0.2s;
+}
+.stButton > button:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%) !important;
+}
 
-# /* File uploader */
-# .stFileUploader, .stFileUploader label {
-#     background: #f0f4fa !important;
-#     border-radius: 10px !important;
-#     border: 1.5px solid #e3e8f0 !important;
-#     padding: 1em !important;
-#     color: #1a237e !important;
-#     font-weight: 500 !important;
-# }
+/* File uploader */
+.stFileUploader, .stFileUploader label {
+    background: #f0f4fa !important;
+    border-radius: 10px !important;
+    border: 1.5px solid #e3e8f0 !important;
+    padding: 1em !important;
+    color: #1a237e !important;
+    font-weight: 500 !important;
+}
 
-# /* Tabs */
-# .stTabs [data-baseweb="tab"] {
-#     font-size: 1.1rem !important;
-#     font-weight: 600 !important;
-#     color: #1a237e !important;
-#     background: #e3e8f0 !important;
-#     border-radius: 8px 8px 0 0 !important;
-#     margin-right: 4px !important;
-# }
-# .stTabs [aria-selected="true"] {
-#     background: #fff !important;
-#     color: #007BFF !important;
-#     border-bottom: 2.5px solid #007BFF !important;
-# }
+/* Tabs */
+.stTabs [data-baseweb="tab"] {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1a237e !important;
+    background: #e3e8f0 !important;
+    border-radius: 8px 8px 0 0 !important;
+    margin-right: 4px !important;
+}
+.stTabs [aria-selected="true"] {
+    background: #fff !important;
+    color: #007BFF !important;
+    border-bottom: 2.5px solid #007BFF !important;
+}
 
-# /* Info/success/warning banners */
-# .stAlert {
-#     border-radius: 10px !important;
-#     font-size: 1.05rem !important;
-# }
+/* Info/success/warning banners */
+.stAlert {
+    border-radius: 10px !important;
+    font-size: 1.05rem !important;
+}
 
-# /* Pie/Bar/Plotly chart container tweaks */
-# .stPlotlyChart, .stPlotlyChart > div {
-#     background: #fff !important;
-#     border-radius: 14px !important;
-#     box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
-#     padding: 8px !important;
-# }
+/* Pie/Bar/Plotly chart container tweaks */
+.stPlotlyChart, .stPlotlyChart > div {
+    background: #fff !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
+    padding: 8px !important;
+}
 
-# /* Input fields */
-# .stTextInput > div > input {
-#     border-radius: 8px !important;
-#     border: 1.5px solid #e3e8f0 !important;
-#     background: #f0f4fa !important;
-#     font-size: 1.08rem !important;
-#     padding: 0.5em 1em !important;
-# }
+/* Input fields */
+.stTextInput > div > input {
+    border-radius: 8px !important;
+    border: 1.5px solid #e3e8f0 !important;
+    background: #f0f4fa !important;
+    font-size: 1.08rem !important;
+    padding: 0.5em 1em !important;
+}
 
-# /* Hide Streamlit default hamburger and footer */
-# #MainMenu, footer {visibility: hidden;}
-# </style>
-# ''', unsafe_allow_html=True)
+/* Hide Streamlit default hamburger and footer */
+#MainMenu, footer {visibility: hidden;}
+</style>
+''', unsafe_allow_html=True)
 
 # # Apply custom CSS to left-align the app and optimize layout
 # st.markdown("""
