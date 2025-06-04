@@ -681,7 +681,7 @@ with tabs[0]:
         uploaded_file.seek(0)
         df_uploaded = pd.read_csv(uploaded_file)
         st.success("✅ File uploaded! Click 'Score' to analyze.")
-        Display uploaded file in a Streamlit dataframe (no tabulate dependency)
+        #Display uploaded file in a Streamlit dataframe (no tabulate dependency)
         st.markdown('#### 📄 File Preview')
         st.dataframe(df_uploaded.head(20), use_container_width=True)
         if st.button("Score", key="score_batch_button"):
