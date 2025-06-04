@@ -678,12 +678,12 @@ with tabs[0]:
         #     except Exception:
         #         st.write(upload_response.text)
         # # Reset file pointer for pandas
-        # uploaded_file.seek(0)
-        # df_uploaded = pd.read_csv(uploaded_file)
-        # st.success("✅ File uploaded! Click 'Score' to analyze.")
-        # Display uploaded file in a Streamlit dataframe (no tabulate dependency)
-        # st.markdown('#### 📄 File Preview')
-        # st.dataframe(df_uploaded.head(20), use_container_width=True)
+        uploaded_file.seek(0)
+        df_uploaded = pd.read_csv(uploaded_file)
+        st.success("✅ File uploaded! Click 'Score' to analyze.")
+        Display uploaded file in a Streamlit dataframe (no tabulate dependency)
+        st.markdown('#### 📄 File Preview')
+        st.dataframe(df_uploaded.head(20), use_container_width=True)
         if st.button("Score", key="score_batch_button"):
             # Just run the Databricks notebook (databricks-new.py) and display the JSON output
             headers = {
