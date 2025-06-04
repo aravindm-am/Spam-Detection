@@ -663,24 +663,24 @@ with tabs[0]:
                 "contents": encoded_content
             }
         )
-        # --- Debugging output ---
-        st.write("DBFS Upload Response Status:", upload_response.status_code)
-        try:
-            st.write("DBFS Upload Response JSON:", upload_response.json())
-        except Exception:
-            st.write("DBFS Upload Response Text:", upload_response.text)
-        if upload_response.status_code == 200:
-            st.success(f"✅ File uploaded successfully to {dbfs_file_path}")
-        else:
-            st.error(f"❌ Upload to DBFS failed: {upload_response.status_code}")
-            try:
-                st.json(upload_response.json())
-            except Exception:
-                st.write(upload_response.text)
-        # Reset file pointer for pandas
-        uploaded_file.seek(0)
-        df_uploaded = pd.read_csv(uploaded_file)
-        st.success("✅ File uploaded! Click 'Score' to analyze.")
+        # # --- Debugging output ---
+        # st.write("DBFS Upload Response Status:", upload_response.status_code)
+        # try:
+        #     st.write("DBFS Upload Response JSON:", upload_response.json())
+        # except Exception:
+        #     st.write("DBFS Upload Response Text:", upload_response.text)
+        # if upload_response.status_code == 200:
+        #     st.success(f"✅ File uploaded successfully to {dbfs_file_path}")
+        # else:
+        #     st.error(f"❌ Upload to DBFS failed: {upload_response.status_code}")
+        #     try:
+        #         st.json(upload_response.json())
+        #     except Exception:
+        #         st.write(upload_response.text)
+        # # Reset file pointer for pandas
+        # uploaded_file.seek(0)
+        # df_uploaded = pd.read_csv(uploaded_file)
+        # st.success("✅ File uploaded! Click 'Score' to analyze.")
         # Display uploaded file in a Streamlit dataframe (no tabulate dependency)
         st.markdown('#### 📄 File Preview')
         st.dataframe(df_uploaded.head(20), use_container_width=True)
