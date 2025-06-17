@@ -12,12 +12,16 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
+API_BASE = "http://163.69.82.203:8095/tmf/v1"
+
 # Streamlit UI
 # Remove blank spaces before the title by injecting CSS to set margin-top: 0 for .block-container and .main
 st.markdown('''
 <style>
-.block-container { margin-top: 0 !important; }
+.block-container { margin-top: 0 !important; padding-top: 0 !important; }
 section.main { padding-top: 0 !important; }
+header[data-testid="stHeader"] { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+.custom-header-box { margin-top: 14px !important; }
 </style>
 ''', unsafe_allow_html=True)
 
@@ -447,10 +451,29 @@ HARDCODED_COMBINED_ANALYSIS = {
                 "max": 4.721
             }
         }
-    },
-    "prediction_distribution": {
+    },    "prediction_distribution": {
         "Normal": 9582,
         "Anomaly": 942
+    },
+    "spam_prefix_bar_plot": {
+        "prefixes": [
+            "80184",
+            "76717",
+            "92044",
+            "88311",
+            "72679"
+        ],
+        "counts": [
+            10,
+            7,
+            5,
+            12,
+            4
+        ]
+    },
+    "time_call": {
+        "Weekday": 6559,
+        "Weekend": 3441
     }
 }
 
@@ -557,7 +580,7 @@ def run_notebook(phone_number):
 # st.title("📞 Telecom Fraud Detection")
 
 # Change the order of tabs - Combined Analysis first, Individual Analysis second
-tabs = st.tabs(["📊 Combined Analysis", "🔎 Individual Analysis"])
+api_tabs = st.tabs(["📊 Combined Analysis", "🔎 Individual Analysis", "🔗 Blockchain"])
 
 # --- Responsive height: inject JS to get viewport height and set in session_state ---
 if 'viewport_height' not in st.session_state:
@@ -642,49 +665,9 @@ except Exception:
     pass
 
 # Tab 1: Combined Analysis (now first)
-with tabs[0]:
-    # --- Batch scoring UI ---
-    st.markdown("#### <span style='color:#007BFF;'>Upload a file for scoring</span>", unsafe_allow_html=True)
-    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"], key="batch_upload")
-    if uploaded_file is not None:
-        # --- Upload to Databricks DBFS ---
-        import base64
-        file_name = uploaded_file.name
-        file_bytes = uploaded_file.read()
-        encoded_content = base64.b64encode(file_bytes).decode("utf-8")
-        dbfs_file_path = f"dbfs:/tmp/{file_name}"
-        st.info(f"Uploading to DBFS: {dbfs_file_path} ...")
-        upload_response = requests.post(
-            f"{DATABRICKS_HOST}/api/2.0/dbfs/put",
-            headers={"Authorization": f"Bearer {DATABRICKS_TOKEN}"},
-            json={
-                "path": dbfs_file_path,
-                "overwrite": True,
-                "contents": encoded_content
-            }
-        )
-        # # --- Debugging output ---
-        # st.write("DBFS Upload Response Status:", upload_response.status_code)
-        # try:
-        #     st.write("DBFS Upload Response JSON:", upload_response.json())
-        # except Exception:
-        #     st.write("DBFS Upload Response Text:", upload_response.text)
-        # if upload_response.status_code == 200:
-        #     st.success(f"✅ File uploaded successfully to {dbfs_file_path}")
-        # else:
-        #     st.error(f"❌ Upload to DBFS failed: {upload_response.status_code}")
-        #     try:
-        #         st.json(upload_response.json())
-        #     except Exception:
-        #         st.write(upload_response.text)
-        # # Reset file pointer for pandas
-        uploaded_file.seek(0)
-        df_uploaded = pd.read_csv(uploaded_file)
-        st.success("✅ File uploaded! Click 'Score' to analyze.")
-        #Display uploaded file in a Streamlit dataframe (no tabulate dependency)
-        st.markdown('#### 📄 File Preview')
-        st.dataframe(df_uploaded.head(20), use_container_width=True)
-        if st.button("Score", key="score_batch_button"):
+with api_tabs[0]:
+    # --- Batch screening UI ---
+    if st.button("Start Screening", key="start_screening_button"):
             # Just run the Databricks notebook (databricks-new.py) and display the JSON output
             headers = {
                 "Authorization": f"Bearer {DATABRICKS_TOKEN}",
@@ -738,22 +721,74 @@ with tabs[0]:
                             except:
                                 pass
                 if notebook_output and "results" in notebook_output:
-                  # Display results table with caller, prediction, and anomaly_score
-                    st.markdown("#### <span style='color:#007BFF;'>📋 Scoring Results</span>", unsafe_allow_html=True)
+                  # Display results table with caller, prediction, anomaly_score, country, and operator
+                    st.markdown("#### <span style='color:#007BFF;'>Scoring Results</span>", unsafe_allow_html=True)
                     results_df = pd.DataFrame(notebook_output["results"])
-                    # Rename columns for display
-                    results_df.columns = ['Caller', 'Prediction', 'Anomaly Score']
-                    def highlight_anomaly(row):
+                    # Select and rename columns for display
+                    results_df = results_df[['caller', 'prediction', 'anomaly_score', 'caller_country', 'caller_operator']]
+                    results_df.columns = ['Caller', 'Prediction', 'Anomaly Score', 'Country', 'Operator']
+                    # Format anomaly scores to two decimal places as string
+                    results_df['Anomaly Score'] = results_df['Anomaly Score'].apply(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+                    # Sort: Anomaly first, then Normal
+                    anomaly_rows = results_df[results_df['Prediction'] == 'Anomaly']
+                    normal_rows = results_df[results_df['Prediction'] == 'Normal']
+                    results_df = pd.concat([anomaly_rows, normal_rows], ignore_index=True)
+
+                    # Compact table CSS
+                    st.markdown("""
+                        <style>
+                        .compact-table td, .compact-table th {
+                            padding: 0.25rem 0.5rem !important;
+                            font-size: 0.95rem !important;
+                            text-align: left !important;
+                        }
+                        .compact-table th { background: #f0f4fa; }
+                        </style>
+                    """, unsafe_allow_html=True)
+
+                    # Render compact HTML table with new columns
+                    html = '<table class="compact-table" style="width:100%;border-collapse:collapse;">'
+                    html += '<tr><th>Caller</th><th>Prediction</th><th>Anomaly Score</th><th>Country</th><th>Operator</th></tr>'
+                    for _, row in results_df.iterrows():
+                        color = "#FF4B4B" if row["Prediction"] == 'Anomaly' else "#1a237e"
+                        html += f'<tr>' \
+                                f'<td style="color:{color};">{row["Caller"]}</td>' \
+                                f'<td style="color:{color};">{row["Prediction"]}</td>' \
+                                f'<td style="color:{color};">{row["Anomaly Score"]}</td>' \
+                                f'<td style="color:{color};">{row["Country"]}</td>' \
+                                f'<td style="color:{color};">{row["Operator"]}</td>' \
+                                f'</tr>'
+                    html += '</table>'
+                    st.markdown(html, unsafe_allow_html=True)
+
+                    # Save the raw results for use in Blockchain tab
+                    st.session_state['scoring_results'] = notebook_output["results"]
+
+                    # --- Populate anomaly_numbers in session_state for Blockchain tab ---
+                    anomaly_dict = {}
+                    for _, row in results_df.iterrows():
                         if row['Prediction'] == 'Anomaly':
-                            return ['color: red; font-weight: normal;', 'color: red; font-weight: normal;', 'color: red; font-weight: normal;']
-                        else:
-                            return ['', '', '']
-                    styled_df = results_df.style.apply(highlight_anomaly, axis=1)
-                    styled_df = styled_df.set_properties(**{'font-size': '1.1em'})
-                    styled_df = styled_df.set_table_styles([
-                        dict(selector='th', props=[('color', '#1a237e'), ('font-weight', 'bold'), ('font-size', '1.1em')])
-                    ])
-                    st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
+                            try:
+                                score = float(row['Anomaly Score'])
+                            except:
+                                score = 0.0
+                            anomaly_dict[row['Caller']] = score
+                    st.session_state['anomaly_numbers'] = anomaly_dict
+
+                    # # --- Add to blockchain feature: just redirect to Blockchain tab ---
+                    # st.markdown("<br>", unsafe_allow_html=True)
+                    # if st.button("Add to blockchain", key="add_to_blockchain_btn"):
+                    #     st.session_state['switch_to_blockchain_tab'] = True
+                    #     st.experimental_rerun()
+
+                    # --- Show preview of sample_predictions.csv from GitHub ---
+                    try:
+                        csv_url = "https://raw.githubusercontent.com/aravindm-am/Spam-Detection-Test/main/spam_call_dataset_updated.csv"  # Update with your actual username/repo if needed
+                        sample_df = pd.read_csv(csv_url)
+                        st.markdown("#### <span style='color:#007BFF;'>CSV Preview</span>", unsafe_allow_html=True)
+                        st.dataframe(sample_df.head(10), use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not load sample_predictions.csv: {e}")
                 else:
                     st.warning("No results found in notebook output.")
                     
@@ -776,10 +811,10 @@ with tabs[0]:
         available_height = st.session_state['viewport_height'] - header_height - padding
         # 2 rows: each row gets half the available height
         row_height = max(200, int(available_height / 2))
-        # 3 columns for the first row
+        # 3 columns for each row
         col_width = int(st.session_state['viewport_width'] / 3)
-    
-        # First row - 3 equal columns for the three main plots
+
+        # --- ROW 1 ---
         row1_col1, row1_col2, row1_col3 = st.columns(3, gap="medium")
         with row1_col1:
             if 'global_feature_importance' in combined:
@@ -799,13 +834,14 @@ with tabs[0]:
                 )
                 fig_global_importance.update_layout(
                     height=row_height,
-                    margin=dict(l=5, r=5, t=5, b=5),
-                    title=""  # Set empty string to avoid 'undefined' label
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    title="",
+                    font=dict(size=14, family='Segoe UI', color='#1a237e'),
+                    plot_bgcolor='white',
                 )
                 st.plotly_chart(fig_global_importance, use_container_width=True)
             else:
                 st.warning("Global feature importance data not available.")
-    
         with row1_col2:
             if 'prediction_distribution' in combined:
                 st.markdown("#### <span style='color:#007BFF;'>🔄 Fraud vs. Normal Call Distribution</span>", unsafe_allow_html=True)
@@ -820,17 +856,68 @@ with tabs[0]:
                 )
                 fig_pie.update_layout(
                     height=row_height,
-                    margin=dict(l=5, r=5, t=5, b=5),
+                    margin=dict(l=10, r=10, t=10, b=10),
                     legend=dict(orientation="h", yanchor="bottom", y=-0.2),
-                    title=""  # Set empty string to avoid 'undefined' label
+                    title="",
+                    font=dict(size=14, family='Segoe UI', color='#1a237e'),
+                    plot_bgcolor='white',
                 )
                 st.plotly_chart(fig_pie, use_container_width=True)
             else:
                 st.warning("Prediction distribution data not available.")
-    
         with row1_col3:
+            if 'spam_prefix_bar_plot' in combined:
+                st.markdown("#### <span style='color:#007BFF;'>📞 Spam Call Frequency by Number Prefix</span>", unsafe_allow_html=True)
+                prefix_data = combined['spam_prefix_bar_plot']
+                fig_prefix = go.Figure(go.Bar(
+                    x=prefix_data['prefixes'],
+                    y=prefix_data['counts'],
+                    marker=dict(
+                        color='#FF7F50',  # Coral color
+                        line=dict(width=1, color='#FF6347')  # Tomato color border
+                    ),
+                    hovertemplate='Prefix: %{x}<br>Count: %{y}<extra></extra>'
+                ))
+                fig_prefix.update_layout(
+                    xaxis_title=dict(
+                        text="Number Prefix",
+                        font=dict(size=14, color='#1a237e')
+                    ),
+                    yaxis_title=dict(
+                        text="Number of Anomalous Callers",
+                        font=dict(size=14, color='#1a237e')
+                    ),
+                    height=row_height,
+                    margin=dict(l=20, r=20, t=40, b=60),  # Increased bottom margin for labels
+                    bargap=0.2,  # Add some gap between bars
+                    yaxis=dict(
+                        gridcolor='rgba(0,0,0,0.1)',
+                        gridwidth=1,
+                        griddash='dash',
+                        tickformat='',  # Display full numbers without 'k' suffix
+                        tickfont=dict(size=12)
+                    ),
+                    xaxis=dict(
+                        tickangle=0,  # Horizontal labels
+                        tickmode='array',
+                        ticktext=prefix_data['prefixes'],
+                        tickvals=prefix_data['prefixes'],
+                        tickfont=dict(size=12),
+                        showgrid=False
+                    ),
+                    plot_bgcolor='white',  # White background
+                    showlegend=False,
+                    font=dict(size=14, family='Segoe UI', color='#1a237e'),
+                )
+                st.plotly_chart(fig_prefix, use_container_width=True)
+            else:
+                st.warning("Spam prefix data not available.")
+
+        # --- ROW 2 ---
+        row2_col1, row2_col2, row2_col3 = st.columns(3, gap="medium")
+        with row2_col1:
             if 'correlation_matrix' in combined:
-                st.markdown("#### <span style='color:#007BFF;'>🔄 Correlated Call Patterns in Risk Profiles</span>", unsafe_allow_html=True)
+                st.markdown("#### <span style='color:#007BFF;'>🔄 Correlated Call Patterns</span>", unsafe_allow_html=True)
                 important_features = ["short_call_ratio", "mean_duration", "pct_daytime", "pct_weekend"]
                 filtered_corr = {k: {k2: v2 for k2, v2 in v.items() if k2 in important_features} 
                                 for k, v in combined['correlation_matrix'].items() 
@@ -845,15 +932,16 @@ with tabs[0]:
                 )
                 fig_corr.update_layout(
                     height=row_height,
-                    margin=dict(l=5, r=5, t=5, b=5),
-                    title=""  # Set empty string to avoid 'undefined' label
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    title="",
+                    font=dict(size=14, family='Segoe UI', color='#1a237e'),
+                    plot_bgcolor='white',
                 )
-                fig_corr.update_traces(texttemplate="%{text}", textfont={"size": 10})
+                fig_corr.update_traces(texttemplate="%{text}", textfont={"size": 12})
                 st.plotly_chart(fig_corr, use_container_width=True)
             else:
-                st.warning("Correlation matrix data not available.")  
-        row2_col1, row2_col2 = st.columns(2)
-        with row2_col1:
+                st.warning("Correlation matrix data not available.")
+        with row2_col2:
             if 'feature_distributions' in combined:
                 st.markdown("#### <span style='color:#007BFF;'>📈 Spotting Risk Through Call Behavior</span>", unsafe_allow_html=True)
                 feature_options = list(combined['feature_distributions'].keys())
@@ -883,17 +971,19 @@ with tabs[0]:
                         marker_color='#FF4B4B'
                     ))
                     fig_dist.update_layout(
-                        title="",  # Set empty string to avoid 'undefined' label
+                        title="",
                         xaxis_title="Value",
                         barmode='group',
                         height=row_height,
-                        margin=dict(l=5, r=5, t=20, b=20),
-                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                        margin=dict(l=10, r=10, t=10, b=10),
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                        font=dict(size=14, family='Segoe UI', color='#1a237e'),
+                        plot_bgcolor='white',
                     )
                     st.plotly_chart(fig_dist, use_container_width=True)
             else:
                 st.warning("Feature distribution data not available.")
-        with row2_col2:
+        with row2_col3:
             if 'anomaly_score_distribution' in combined:
                 st.markdown("#### <span style='color:#007BFF;'>🔔 Likelihood of Fraud Across Users</span>", unsafe_allow_html=True)
                 hist_data = combined['anomaly_score_distribution']['histogram_data']
@@ -929,86 +1019,221 @@ with tabs[0]:
                     text=bin_labels
                 ))
                 fig_hist.update_layout(
-                    title="",  # Set empty string to avoid 'undefined' label
+                    title="",
                     xaxis_title="Anomaly Score",
                     yaxis_title="Count",
                     barmode='group',
                     height=row_height,
-                    margin=dict(l=5, r=5, t=20, b=20),
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    font=dict(size=14, family='Segoe UI', color='#1a237e'),
+                    plot_bgcolor='white',
                 )
                 st.plotly_chart(fig_hist, use_container_width=True)
             else:
                 st.warning("Anomaly score distribution data not available.")
 
+        # --- Time of Call Pie Chart ---
+        if 'time_call' in combined:
+            st.markdown("#### <span style='color:#007BFF;'>🕒 Time of Call Distribution</span>", unsafe_allow_html=True)
+            time_labels = list(combined['time_call'].keys())
+            time_values = list(combined['time_call'].values())
+            fig_time_call = px.pie(
+                names=time_labels,
+                values=time_values,
+                color=time_labels,
+                color_discrete_map={'Weekday': '#007BFF', 'Weekend': '#FF4B4B'},
+                hole=0.4
+            )
+            fig_time_call.update_layout(
+                height=350,
+                margin=dict(l=10, r=10, t=10, b=10),
+                legend=dict(orientation="h", yanchor="bottom", y=-0.2),
+                title="",
+                font=dict(size=14, family='Segoe UI', color='#1a237e'),
+                plot_bgcolor='white',
+            )
+            st.plotly_chart(fig_time_call, use_container_width=True)
 # Tab 2: Individual Analysis (now second)
-with tabs[1]:
+with api_tabs[1]:
     st.markdown("#### <span style='color:#007BFF;'>Check a Phone Number for Fraud</span>", unsafe_allow_html=True)
     phone_number = st.text_input("Enter Phone Number to Check")
     run_button = st.button("Run Fraud Check", key="run_check_button")
     
     if run_button:
+        st.session_state['shap_data'] = None  # or {}
         if phone_number.strip():
             with st.spinner("Subex Spam Scoring Started..."):
                 result, notebook_output = run_notebook(phone_number.strip())
                 if result == "SUCCESS":
                     st.success("🎉 Analysis complete!")
+                    # After getting notebook_output (the JSON string)
                     shap_data = notebook_output
-                    st.session_state.shap_data = shap_data
+                    st.session_state['shap_data'] = shap_data
 
                     st.subheader("📞 Prediction Summary")
                     st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Phone Number</b>: <code>{phone_number}</code></span>", unsafe_allow_html=True)
-                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Prediction</b>: <code>{shap_data['prediction']}</code></span>", unsafe_allow_html=True)
-                    st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Anomaly Score</b>: <code>{shap_data['anomaly_score']:.4f}</code></span>", unsafe_allow_html=True)
+                    not_found = False
+                    if 'prediction' in shap_data and shap_data['prediction'] is not None:
+                        st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Prediction</b>: <code>{shap_data['prediction']}</code></span>", unsafe_allow_html=True)
+                    else:
+                        st.warning("Prediction not available for this number.")
+                        not_found = True
+                    if 'anomaly_score' in shap_data and shap_data['anomaly_score'] is not None:
+                        st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>Anomaly Score</b>: <code>{shap_data['anomaly_score']:.4f}</code></span>", unsafe_allow_html=True)
                     if 'explanation' in shap_data and shap_data['explanation']:
                         st.markdown(f"<span style='font-size:1.1rem;color:#374151;'><b>AI Explanation</b>: {shap_data['explanation']}</span>", unsafe_allow_html=True)
 
-                    feature_importance_df = pd.DataFrame({
-                        'Feature': list(shap_data['feature_importance'].keys()),
-                        'Importance': list(shap_data['feature_importance'].values())
-                    }).sort_values('Importance', ascending=False)
+                    # Only show feature importance if present in shap_data
+                    if 'feature_importance' in shap_data and shap_data['feature_importance']:
+                        feature_importance_df = pd.DataFrame({
+                            'Feature': list(shap_data['feature_importance'].keys()),
+                            'Importance': list(shap_data['feature_importance'].values())
+                        }).sort_values('Importance', ascending=False)
 
-                    # Prepare data for waterfall plot
-                    waterfall_data = shap_data['feature_contributions']
-                    features = list(waterfall_data.keys())
-                    shap_values = [waterfall_data[f]['shap_value'] for f in features]
+                        # Prepare data for waterfall plot
+                        waterfall_data = shap_data['feature_contributions']
+                        features = list(waterfall_data.keys())
+                        shap_values = [waterfall_data[f]['shap_value'] for f in features]
 
-                    tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
+                        tab1, tab2 = st.tabs(["📊 Feature Importance", "🔍 Waterfall"])
 
-                    with tab1:
-                        st.markdown("### 📊 Individual Feature Importance")
-                        fig_importance = px.bar(
-                                feature_importance_df, 
-                                x='Importance', 
-                                y='Feature', 
-                                orientation='h',
-                                color='Importance',
-                                color_continuous_scale='Blues'
-                            )
-                        fig_importance.update_layout(title="Individual Feature Importance")
-                        st.plotly_chart(fig_importance, use_container_width=True)
+                        with tab1:
+                            st.markdown("### 📊 Individual Feature Importance")
+                            fig_importance = px.bar(
+                                    feature_importance_df, 
+                                    x='Importance', 
+                                    y='Feature', 
+                                    orientation='h',
+                                    color='Importance',
+                                    color_continuous_scale='Blues'
+                                )
+                            fig_importance.update_layout(title="Individual Feature Importance")
+                            st.plotly_chart(fig_importance, use_container_width=True)
                                               
 
-                    with tab2:
-                        fig_waterfall = go.Figure(go.Waterfall(
-                            name="SHAP Values", 
-                            orientation="h",
-                            y=features,
-                            x=shap_values,
-                            connector={"line":{"color":"rgb(63, 63, 63)"}},
-                            decreasing={"marker":{"color":"#FF4B4B"}},
-                            increasing={"marker":{"color":"#007BFF"}},
-                            base=shap_data['base_value']
-                        ))
-                        fig_waterfall.update_layout(
-                            title="SHAP Waterfall Plot",
-                            xaxis_title="SHAP Value",
-                            yaxis_title="Feature",
-                            showlegend=False
-                        )
-                        st.plotly_chart(fig_waterfall, use_container_width=True)
-
-                else:
-                    st.error(f"❌ Job failed: {result}")
+                        with tab2:
+                            fig_waterfall = go.Figure(go.Waterfall(
+                                name="SHAP Values", 
+                                orientation="h",
+                                y=features,
+                                x=shap_values,
+                                connector={"line":{"color":"rgb(63, 63, 63)"}},
+                                decreasing={"marker":{"color":"#FF4B4B"}},
+                                increasing={"marker":{"color":"#007BFF"}},
+                                base=shap_data['base_value']
+                            ))
+                            fig_waterfall.update_layout(
+                                title="SHAP Waterfall Plot",
+                                xaxis_title="SHAP Value",
+                                yaxis_title="Feature",
+                                showlegend=False
+                            )
+                            st.plotly_chart(fig_waterfall, use_container_width=True)
+                    else:
+                        not_found = True
+                    if not_found:
+                        st.info("Number not found in dataset.")
         else:
             st.warning("📱 Please enter a valid phone number.")
+
+# Tab 3: Blockchain API Interface
+with api_tabs[2]:
+    st.title("QoT Record Interface")
+    mode = st.selectbox("Select Operation", ["Insert/Update", "Read/Query"])
+    # Switch to Blockchain tab if requested
+    if st.session_state.get('switch_to_blockchain_tab', False):
+        st.session_state['switch_to_blockchain_tab'] = False
+        st.session_state['blockchain_tab_selected'] = True
+        st.experimental_set_query_params(tab=2)
+    # Pre-select anomaly if coming from Combined Analysis
+    anomaly_numbers = st.session_state.get('anomaly_numbers', {})
+    selected_anomaly = None
+    if 'selected_anomaly_for_blockchain' in st.session_state:
+        selected_anomaly = st.session_state.pop('selected_anomaly_for_blockchain')
+    anomaly_score = anomaly_numbers[selected_anomaly] if selected_anomaly and selected_anomaly in anomaly_numbers else 0.1432
+    # --- Store submitted MSISDNs in session state ---
+    if 'submitted_msisdns' not in st.session_state:
+        st.session_state['submitted_msisdns'] = []
+    if mode == "Insert/Update" and anomaly_numbers:
+        st.markdown("**Select an anomaly number:**")
+        selected_anomaly = st.selectbox("Anomaly Numbers", list(anomaly_numbers.keys()), key="anomaly_select")
+        msisdn = str(selected_anomaly) if selected_anomaly else ""
+        anomaly_score = anomaly_numbers[selected_anomaly] if selected_anomaly else 0.1432
+        # --- Auto-populate Operator and Country from scoring results ---
+        # Try to get the last scoring results from session_state
+        operator = ""
+        country = ""
+        if 'scoring_results' in st.session_state:
+            # scoring_results is a list of dicts
+            for r in st.session_state['scoring_results']:
+                if str(r.get('caller')) == msisdn:
+                    operator = r.get('caller_operator', "")
+                    country = r.get('caller_country', "")
+                    break
+        else:
+            # fallback: try to get from anomaly_dict if available
+            operator = ""
+            country = ""
+    else:
+        msisdn = ""
+        operator = ""
+        country = ""
+    if mode == "Insert/Update":
+        st.subheader("Insert or Update QoT Record")
+        src_o = st.text_input("Source Operator", operator or "Jio")
+        src_c = st.text_input("Source Country", country or "India")
+        rep_o = "Airtel"   #st.text_input("Reported Operator", "Airtel")
+        rep_c = "India     "#st.text_input("Reported Country", "India")
+        score = st.number_input("Score", min_value=0.0, max_value=1.0, value=anomaly_score, step=0.01, key="score_input")
+        if st.button("Submit"):
+            payload = {
+                "requestId": "000001",
+                "module": "tmforum",
+                "channelID": "globalspamdatachannel",
+                "chaincodeID": "qotcc",
+                "functionName": "addQoTRecord",
+                "payload": {
+                    "msisdn": str(msisdn),
+                    "src_o": src_o,
+                    "src_c": src_c,
+                    "rep_o": rep_o,
+                    "rep_c": rep_c,
+                    "score": score
+                }
+            }
+            try:
+                response = requests.post(f"{API_BASE}/invoke/", headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+                st.code(response.text, language="json")
+                if msisdn and msisdn not in st.session_state['submitted_msisdns']:
+                    st.session_state['submitted_msisdns'].append(msisdn)
+            except Exception as e:
+                st.error(f"Error: {e}")
+    elif mode == "Read/Query":
+        st.subheader("Read QoT Record")
+        msisdn_options = st.session_state['submitted_msisdns']
+        msisdn_selected = None
+        if msisdn_options:
+            msisdn_selected = st.selectbox("Select previously submitted MSISDN", options=msisdn_options, key="read_msisdn_select")
+        else:
+            st.info("No MSISDNs have been submitted yet.")
+        msisdn_to_query = str(msisdn_selected) if msisdn_selected else ""
+        record_response = None
+        if st.button("Fetch Record") and msisdn_to_query:
+            payload = {
+                "requestId": "000001",
+                "module": "tmforum",
+                "channelID": "globalspamdatachannel",
+                "chaincodeID": "qotcc",
+                "functionName": "getQoTRecord",
+                "payload": [str(msisdn_to_query)]
+            }
+            try:
+                response = requests.post(f"{API_BASE}/query/", headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+                record_response = response.text
+                st.code(record_response, language="json")
+            except Exception as e:
+                st.error(f"Error: {e}")
+        # if 'record_response' in locals() and record_response:
+        #     st.markdown("#### QoT Record Result")
+        #     st.code(record_response, language="json")
